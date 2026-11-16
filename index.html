@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fast Programmer</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--tx:#1d2233;--mu:#6b7285;--ac:#4f46e5;--ok:#16a34a;--bad:#dc2626;--bd:#e2e5ef;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12141c;--card:#1c1f2b;--tx:#e8eaf3;--mu:#98a0b8;--ac:#818cf8;--ok:#4ade80;--bad:#f87171;--bd:#2c3042}}
+*{box-sizing:border-box}
+svg{max-width:100%;height:auto}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:760px;margin:0 auto;padding:48px 16px 20px}
+h1{font-size:28px;margin:8px 0 4px}
+.sub{color:var(--mu);margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:12px;padding:14px;font-weight:600}
+button:hover{border-color:var(--ac)}
+.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+.bar{display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between;color:var(--mu);font-size:14px;margin-bottom:10px}
+.bar b{color:var(--tx)}
+.prog{height:6px;background:var(--bd);border-radius:6px;overflow:hidden;margin-bottom:14px}
+.prog i{display:block;height:100%;background:var(--ac);width:0}
+#code{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;font:18px/1.7 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-x:auto;min-height:140px}
+.d{color:var(--ok)}.c{background:var(--ac);color:#fff;border-radius:3px}.n{color:var(--mu)}
+.shake{animation:s .15s}@keyframes s{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.hint{color:var(--mu);font-size:14px;margin-top:10px}
+.big{font-size:34px;font-weight:700}
+.hide{display:none}
+td,th{padding:3px 8px;border-bottom:1px solid var(--bd);text-align:center}
+select,.f{font:inherit;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
+@keyframes gl{50%{opacity:.4}}
+.gl{background:#f59e0b!important;color:#000!important;border-color:#f59e0b!important;animation:gl .9s infinite}
+:root[data-theme="dark"]{--bg:#12141c;--card:#1c1f2b;--tx:#e8eaf3;--mu:#98a0b8;--ac:#818cf8;--ok:#4ade80;--bad:#f87171;--bd:#2c3042}
+.msg{border:2px solid var(--ok);background:var(--card);border-radius:12px;padding:14px 16px;font-size:18px;font-weight:600;margin:0 0 14px}.msg.l{border-color:var(--bad)}
+.share-box{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20;display:flex;align-items:center;justify-content:center;padding:16px}.share-panel{max-width:540px;width:min(100%,540px);padding:18px 18px 12px}.share-link{width:100%;margin:10px 0 14px;padding:12px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit}
+#in{position:fixed;opacity:0;left:-999px;top:0;width:1px;height:1px}
+</style></head><body><main>
+<button id="th" style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);right:10px;padding:4px 10px;z-index:5">🌓</button>
+<textarea id="in" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
+
+<section id='s0'>
+<h1>🎮 Choose a game</h1>
+<p class='sub'>What do you want to practice today?</p>
+<p class='sub' id='xp'></p>
+<div class='grid'>
+<button id='m1' style='padding:22px'>⌨️ Programming<br><span class='hint'>Fast Programmer: type real algorithms</span></button>
+<button id='m2' style='padding:22px'>🔌 SM – Circuit Builder<br><span class='hint'>Build electronic circuits, like Logisim</span></button>
+</div>
+<p><button class='shareBtn'>🔗 Share this game</button></p>
+</section>
+
+<section id='c1' class='hide'>
+<h1>🔌 Circuit Builder</h1>
+<p class='sub'>Choose your level. You get a task, then build the circuit and press Check.</p>
+<div class='grid'>
+<button data-c='Easy'>🟢 Easy<br><span class='hint'>1 gate: NOT, AND, OR</span></button>
+<button data-c='Medium'>🟡 Medium<br><span class='hint'>NAND, XOR, mixed gates</span></button>
+<button data-c='Hard'>🔴 Hard<br><span class='hint'>Adder and multiplexer</span></button>
+<button data-c='Free'>🧪 Free build<br><span class='hint'>No task, build anything</span></button>
+</div>
+<p><button id='chelp'>❓ Beginner help</button> <button id='cback'>← Back</button></p>
+</section>
+
+<section id='c2' class='hide'>
+<div class='bar'><span id='ct'></span><span><button id='chb' style='padding:2px 10px'>❓ Help</button> <button id='cx' style='padding:2px 10px'>⏹ Exit</button></span></div>
+<div class='msg' id='ctask'></div>
+<div class='msg' id='cg' style='border-color:#f59e0b'><span id='cgm'></span> <button id='cgs' style='padding:2px 10px;font-weight:400;margin-left:6px'>Skip guide</button></div>
+<div id='tools' class='grid' style='grid-template-columns:repeat(auto-fit,minmax(80px,1fr))'></div>
+<div style='display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;margin:10px 0'><svg id='cv' viewBox='0 0 700 380' style='flex:1 1 420px;min-width:300px;aspect-ratio:700/380;background:var(--card);border:1px solid var(--bd);border-radius:12px;touch-action:none'></svg><div id='tt' style='flex:0 0 200px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;max-height:380px;overflow:auto;font-size:14px'></div></div>
+<p class='hint'>Click a switch to turn it 0/1. Double-click any part or wire to delete it. Drag parts to move them. To wire: click an output pin (right circle), then an input pin (left circle).</p>
+<div class='grid' style='grid-template-columns:repeat(auto-fit,minmax(110px,1fr))'><button class='pri' id='ck'>✅ Check</button><button id='chint'>💡 Hint</button><button id='csol'>🪄 Show answer</button><button id='csv'>💾 Save</button><button id='cld'>📂 Load</button><button id='cdel'>🗑 Delete selected</button><button id='cclr'>Clear all</button></div>
+<div id='cres' style='margin-top:12px'></div>
+</section>
+
+<div id='hm' class='hide' style='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10;overflow:auto;padding:16px'><div class='msg' style='max-width:640px;margin:0 auto;font-weight:400;font-size:15px'>
+<h2 style='margin:0 0 8px'>❓ Beginner help</h2>
+<p><b>Digital signals:</b> everything is <b>1</b> (ON / high / true) or <b>0</b> (OFF / low / false). A wire is <b style='color:var(--ok)'>green</b> when it carries 1.</p>
+<h3>Parts</h3>
+<ul>
+<li><b>Switch</b> (input): you control it. Click it to flip 0 ↔ 1. The first switch is A, the second is B...</li>
+<li><b>LED</b> (output): the lamp that shows the result. It lights up when it gets 1.</li>
+<li><b>Pin</b>: the small circle on a part. <b>Left pins = inputs</b>, <b>right pin = output</b>.</li>
+<li><b>Wire</b>: click an output pin, then an input pin. One output can feed many wires. Each input takes one wire.</li>
+</ul>
+<h3>Logic gates</h3>
+<table>
+<tr><td><b>NOT</b></td><td>flips the signal: 1→0, 0→1</td></tr>
+<tr><td><b>AND</b></td><td>1 only if <i>all</i> inputs are 1</td></tr>
+<tr><td><b>OR</b></td><td>1 if <i>at least one</i> input is 1</td></tr>
+<tr><td><b>NAND</b></td><td>the opposite of AND</td></tr>
+<tr><td><b>NOR</b></td><td>the opposite of OR</td></tr>
+<tr><td><b>XOR</b></td><td>1 if the inputs are <i>different</i></td></tr>
+</table>
+<h3>How to solve a task</h3>
+<ol><li>Read the task.</li><li>Add the switches, gates and LED from the toolbar.</li><li>Wire them: switch → gate → LED.</li><li>Click the switches to test it.</li><li>Press <b>Check</b>. It tries every combination (a <b>truth table</b>) and tells you which rows are wrong.</li></ol>
+<h3>Words</h3>
+<p><b>Circuit</b>: connected parts. <b>Truth table</b>: all input combinations with the output for each. <b>Logisim</b>: a free program for drawing logic circuits, which this game copies in a simple way.</p>
+<p><button class='pri' id='hclose'>Close</button></p>
+</div></div>
+
+<div id='shareModal' class='hide share-box'>
+  <div class='msg share-panel'>
+    <h2 style='margin:0 0 8px'>🔗 Share this game</h2>
+    <p class='sub'>Send the link below or scan the QR code so a friend opens the same language and level.</p>
+    <input id='shareLink' class='share-link' readonly>
+    <div class='grid' style='grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin-top:10px'>
+      <button id='copyLink' class='pri'>Copy link</button>
+      <button id='shareClose'>Close</button>
+    </div>
+    <div style='display:flex;justify-content:center;margin-top:12px'>
+      <img id='shareQr' alt='QR code for share link' style='max-width:220px;width:100%;background:#fff;border-radius:14px;padding:10px;border:1px solid var(--bd)'>
+    </div>
+  </div>
+</div>
+
+<section id='s5' class='hide'>
+<h1>✨ Order your own program</h1>
+<p class='sub'>Describe the program you want to type. Claude writes it and it becomes a new test for you. (Outside Claude, a small built-in list is used instead.)</p>
+<textarea id='ci' class='f' rows='3' placeholder='Example: a function that counts the vowels in a word'></textarea>
+<div class='grid' style='margin:10px 0'><label>Language (type any)<br><input id='cl' class='f' list='ll' placeholder='Python, Rust, Go, SQL...' autocomplete='off'><datalist id='ll'><option value='C'><option value='C++'><option value='Python'><option value='Java'><option value='JavaScript'><option value='TypeScript'><option value='C#'><option value='Go'><option value='Rust'><option value='PHP'><option value='SQL'></datalist></label><label>Level<br><select id='clv'><option>Easy</option><option>Medium</option><option>Hard</option></select></label></div>
+<div class='grid'><button class='pri' id='cgo'>✨ Write it with Claude</button><button id='cbk5'>← Back</button></div>
+<p id='cst' class='hint'></p>
+</section>
+
+<section id='o1' class='hide'>
+<h1>🧱 OOP: Object-Oriented Programming</h1>
+<p class='sub'>Choose a language (C is not here because C has no classes). You get one OOP idea at a time: its name, how to write it, and a program that uses it for you to type.</p>
+<div class='grid' id='ol'></div>
+<p><button id='ob'>← Back</button></p>
+</section>
+
+<section id='s1' class='hide'>
+<h1>⌨️ Fast Programmer</h1>
+<p class="sub">Step 1: choose your language. Then type real algorithms from easy to hard.</p>
+<div class="grid" id="langs"></div>
+<div class="hint" id="best"></div>
+</section>
+
+<section id="s4" class="hide">
+<h1 id="lh"></h1>
+<p class="sub">Step 2: choose your level.</p>
+<div class="grid">
+<button data-l="0">🟢 Easy<br><span class="hint">loops, sums, max</span></button>
+<button data-l="2">🟡 Medium<br><span class="hint">recursion, primes</span></button>
+<button data-l="4">🔴 Hard<br><span class="hint">sorting, searching</span></button>
+</div>
+<p><button id="back">← Change language</button> <button class='shareBtn'>🔗 Share this game</button></p>
+</section>
+
+<section id="s2" class="hide">
+<div class="bar"><span id="lg"></span><span id="st"></span><span>WPM <b id="w">0</b></span><span>Accuracy <b id="a">100%</b></span><span>Errors <b id="e">0</b></span><button id="qt" style="padding:2px 10px">⏹ End game</button><button id="shareBar" style="padding:2px 10px">🔗 Share</button><button id="mu" style="padding:2px 10px">🔊</button></div>
+<div class="bar" id="hud"></div>
+<div class="prog"><i id="pg"></i></div>
+<div class="bar" style="margin:0 0 4px"><span id="tmt"></span></div><div class="prog"><i id="tm" style="width:100%"></i></div>
+<div id='les' class='msg hide' style='font-weight:400;font-size:15px'></div>
+<h3 id="ti" style="margin:0 0 8px"></h3>
+<div id="code" tabindex="0"></div>
+<p class="hint">Just start typing. Press Enter at the end of a line (shown as ↵). Spaces are automatic, except between two words (like <b>int x</b>). Press <b>Esc</b> or the End game button to stop.<br><span id="kbn" class="hint">⌨️ Works with English or Arabic keyboard automatically.</span></p>
+</section>
+
+<section id="s3" class="hide">
+<h1>🏁 Done!</h1>
+<p class="big"><span id="fw">0</span> WPM</p>
+<div id="msg" class="msg"></div>
+<p id="rk" style="font-size:17px;margin:0 0 8px"></p>
+<p class="sub" id="fa"></p>
+<p id="rs" style="line-height:1.9"></p>
+<p class="hint" id="bk"></p>
+<div class="grid"><button class="pri" id="again">Play again</button><button id="lvl">Change level</button><button id="home">Change language</button><button id="stay">Stay on results</button></div>
+</section>
+</main>
+<script>
+const L={c:"C",cpp:"C++",py:"Python",java:"Java",js:"JavaScript"};
+const D={
+c:[
+["Sum 1 to 10",`int sum = 0;
+for (int i = 1; i <= 10; i++) {
+  sum += i;
+}
+printf("%d", sum);`],
+["Find the max",`int max = a[0];
+for (int i = 1; i < n; i++) {
+  if (a[i] > max) max = a[i];
+}`],
+["Factorial",`int fact(int n) {
+  if (n <= 1) return 1;
+  return n * fact(n - 1);
+}`],
+["Is prime",`int isPrime(int n) {
+  if (n < 2) return 0;
+  for (int i = 2; i * i <= n; i++)
+    if (n % i == 0) return 0;
+  return 1;
+}`],
+["Bubble sort",`for (int i = 0; i < n - 1; i++) {
+  for (int j = 0; j < n - i - 1; j++) {
+    if (a[j] > a[j + 1]) {
+      int t = a[j];
+      a[j] = a[j + 1];
+      a[j + 1] = t;
+    }
+  }
+}`],
+["Binary search",`int lo = 0, hi = n - 1;
+while (lo <= hi) {
+  int mid = (lo + hi) / 2;
+  if (a[mid] == x) return mid;
+  if (a[mid] < x) lo = mid + 1;
+  else hi = mid - 1;
+}
+return -1;`],
+["Count evens",`int count = 0;
+for (int i = 0; i < n; i++) {
+  if (a[i] % 2 == 0) count++;
+}`],
+["Swap two values",`int t = a;
+a = b;
+b = t;
+printf("%d %d", a, b);`],
+["GCD",`int gcd(int a, int b) {
+  while (b != 0) {
+    int t = b;
+    b = a % b;
+    a = t;
+  }
+  return a;
+}`],
+["Selection sort",`for (int i = 0; i < n - 1; i++) {
+  int m = i;
+  for (int j = i + 1; j < n; j++) {
+    if (a[j] < a[m]) m = j;
+  }
+  int t = a[i];
+  a[i] = a[m];
+  a[m] = t;
+}`]],
+cpp:[
+["Sum a vector",`int sum = 0;
+for (int x : v) {
+  sum += x;
+}
+cout << sum << endl;`],
+["Find the max",`int mx = v[0];
+for (size_t i = 1; i < v.size(); i++) {
+  mx = max(mx, v[i]);
+}`],
+["Fibonacci",`int fib(int n) {
+  if (n < 2) return n;
+  return fib(n - 1) + fib(n - 2);
+}`],
+["Is palindrome",`bool isPal(string s) {
+  int i = 0, j = s.size() - 1;
+  while (i < j) {
+    if (s[i++] != s[j--]) return false;
+  }
+  return true;
+}`],
+["Bubble sort",`for (int i = 0; i < n - 1; i++) {
+  for (int j = 0; j < n - i - 1; j++) {
+    if (a[j] > a[j + 1]) {
+      swap(a[j], a[j + 1]);
+    }
+  }
+}`],
+["Binary search",`int lo = 0, hi = v.size() - 1;
+while (lo <= hi) {
+  int mid = lo + (hi - lo) / 2;
+  if (v[mid] == x) return mid;
+  if (v[mid] < x) lo = mid + 1;
+  else hi = mid - 1;
+}
+return -1;`],
+["Count evens",`int count = 0;
+for (int x : v) {
+  if (x % 2 == 0) count++;
+}`],
+["Swap two values",`int t = a;
+a = b;
+b = t;
+cout << a << b;`],
+["GCD",`int gcd(int a, int b) {
+  if (b == 0) return a;
+  return gcd(b, a % b);
+}`],
+["Selection sort",`for (int i = 0; i < n - 1; i++) {
+  int m = i;
+  for (int j = i + 1; j < n; j++) {
+    if (a[j] < a[m]) m = j;
+  }
+  swap(a[i], a[m]);
+}`]],
+py:[
+["Sum 1 to 10",`total = 0
+for i in range(1, 11):
+    total += i
+print(total)`],
+["Find the max",`best = nums[0]
+for n in nums:
+    if n > best:
+        best = n
+print(best)`],
+["Factorial",`def fact(n):
+    if n <= 1:
+        return 1
+    return n * fact(n - 1)`],
+["Is palindrome",`def is_pal(s):
+    s = s.lower()
+    return s == s[::-1]`],
+["Bubble sort",`for i in range(len(a) - 1):
+    for j in range(len(a) - i - 1):
+        if a[j] > a[j + 1]:
+            a[j], a[j + 1] = a[j + 1], a[j]`],
+["Binary search",`lo, hi = 0, len(a) - 1
+while lo <= hi:
+    mid = (lo + hi) // 2
+    if a[mid] == x:
+        return mid
+    if a[mid] < x:
+        lo = mid + 1
+    else:
+        hi = mid - 1
+return -1`],
+["Count evens",`count = 0
+for n in nums:
+    if n % 2 == 0:
+        count += 1
+print(count)`],
+["Swap two values",`a, b = b, a
+print(a, b)`],
+["GCD",`def gcd(a, b):
+    while b != 0:
+        a, b = b, a % b
+    return a`],
+["Selection sort",`for i in range(len(a)):
+    m = i
+    for j in range(i + 1, len(a)):
+        if a[j] < a[m]:
+            m = j
+    a[i], a[m] = a[m], a[i]`]],
+java:[
+["Sum 1 to 10",`int sum = 0;
+for (int i = 1; i <= 10; i++) {
+  sum += i;
+}
+System.out.println(sum);`],
+["Find the max",`int max = a[0];
+for (int i = 1; i < a.length; i++) {
+  if (a[i] > max) max = a[i];
+}`],
+["Factorial",`static int fact(int n) {
+  if (n <= 1) return 1;
+  return n * fact(n - 1);
+}`],
+["Is prime",`static boolean isPrime(int n) {
+  if (n < 2) return false;
+  for (int i = 2; i * i <= n; i++) {
+    if (n % i == 0) return false;
+  }
+  return true;
+}`],
+["Bubble sort",`for (int i = 0; i < a.length - 1; i++) {
+  for (int j = 0; j < a.length - i - 1; j++) {
+    if (a[j] > a[j + 1]) {
+      int t = a[j];
+      a[j] = a[j + 1];
+      a[j + 1] = t;
+    }
+  }
+}`],
+["Binary search",`int lo = 0, hi = a.length - 1;
+while (lo <= hi) {
+  int mid = (lo + hi) / 2;
+  if (a[mid] == x) return mid;
+  if (a[mid] < x) lo = mid + 1;
+  else hi = mid - 1;
+}
+return -1;`],
+["Count evens",`int count = 0;
+for (int x : a) {
+  if (x % 2 == 0) count++;
+}`],
+["Swap two values",`int t = a;
+a = b;
+b = t;
+System.out.println(a);`],
+["GCD",`static int gcd(int a, int b) {
+  while (b != 0) {
+    int t = b;
+    b = a % b;
+    a = t;
+  }
+  return a;
+}`],
+["Selection sort",`for (int i = 0; i < a.length - 1; i++) {
+  int m = i;
+  for (int j = i + 1; j < a.length; j++) {
+    if (a[j] < a[m]) m = j;
+  }
+  int t = a[i];
+  a[i] = a[m];
+  a[m] = t;
+}`]],
+js:[
+["Sum an array",`let sum = 0;
+for (const n of nums) {
+  sum += n;
+}
+console.log(sum);`],
+["Find the max",`let max = nums[0];
+for (let i = 1; i < nums.length; i++) {
+  if (nums[i] > max) max = nums[i];
+}`],
+["Fibonacci",`function fib(n) {
+  if (n < 2) return n;
+  return fib(n - 1) + fib(n - 2);
+}`],
+["Is palindrome",`const isPal = (s) => {
+  const t = s.toLowerCase();
+  return t === [...t].reverse().join("");
+};`],
+["Bubble sort",`for (let i = 0; i < a.length - 1; i++) {
+  for (let j = 0; j < a.length - i - 1; j++) {
+    if (a[j] > a[j + 1]) {
+      [a[j], a[j + 1]] = [a[j + 1], a[j]];
+    }
+  }
+}`],
+["Binary search",`let lo = 0, hi = a.length - 1;
+while (lo <= hi) {
+  const mid = Math.floor((lo + hi) / 2);
+  if (a[mid] === x) return mid;
+  if (a[mid] < x) lo = mid + 1;
+  else hi = mid - 1;
+}
+return -1;`],
+["Count evens",`let count = 0;
+for (const n of nums) {
+  if (n % 2 === 0) count++;
+}`],
+["Swap two values",`[a, b] = [b, a];
+console.log(a, b);`],
+["GCD",`function gcd(a, b) {
+  if (b === 0) return a;
+  return gcd(b, a % b);
+}`],
+["Selection sort",`for (let i = 0; i < a.length - 1; i++) {
+  let m = i;
+  for (let j = i + 1; j < a.length; j++) {
+    if (a[j] < a[m]) m = j;
+  }
+  [a[i], a[m]] = [a[m], a[i]];
+}`]]};
+const LV=["Easy","Easy","Medium","Medium","Hard","Hard","Easy","Easy","Medium","Hard"],NM=["Easy","Medium","Hard"];
+const $=id=>document.getElementById(id),S={};
+let best={};try{best=JSON.parse(localStorage.getItem("fp_best")||"{}")}catch(e){}
+let BK;const show=n=>{clearInterval(BK);try{speechSynthesis.cancel()}catch(e){}if(n==="s1")showBest();["s0","s1","s4","s2","s3","c1","c2","s5","o1"].forEach(x=>$(x).classList.toggle("hide",x!=n))};
+const I={
+c:`<svg viewBox='0 0 48 48' width='52' height='52'><polygon points='24,3 43,14 43,34 24,45 5,34 5,14' fill='#4a6fd1'/><text x='24' y='32' font-size='22' font-weight='700' text-anchor='middle' fill='#fff' font-family='Arial,sans-serif'>C</text></svg>`,
+cpp:`<svg viewBox='0 0 48 48' width='52' height='52'><polygon points='24,3 43,14 43,34 24,45 5,34 5,14' fill='#00599c'/><text x='24' y='29' font-size='15' font-weight='700' text-anchor='middle' fill='#fff' font-family='Arial,sans-serif'>C++</text></svg>`,
+py:`<svg viewBox='0 0 48 48' width='52' height='52'><rect x='5' y='4' width='27' height='27' rx='9' fill='#3776ab'/><rect x='16' y='17' width='27' height='27' rx='9' fill='#ffd43b'/><circle cx='13' cy='12' r='2.5' fill='#fff'/><circle cx='35' cy='36' r='2.5' fill='#3776ab'/></svg>`,
+java:`<svg viewBox='0 0 48 48' width='52' height='52'><path d='M10 20h24v10a10 10 0 0 1-10 10h-4a10 10 0 0 1-10-10z' fill='#e76f00'/><path d='M34 22h3a4 4 0 0 1 0 9h-4' fill='none' stroke='#e76f00' stroke-width='3'/><path d='M16 7c-3 4 3 5 0 9M24 5c-3 4 3 5 0 9' fill='none' stroke='#5382a1' stroke-width='2.5' stroke-linecap='round'/><rect x='8' y='42' width='28' height='3' rx='1.5' fill='#5382a1'/></svg>`,
+js:`<svg viewBox='0 0 48 48' width='52' height='52'><rect x='5' y='5' width='38' height='38' rx='5' fill='#f7df1e'/><text x='40' y='39' font-size='19' font-weight='700' text-anchor='end' fill='#222' font-family='Arial,sans-serif'>JS</text></svg>`};
+for(const k in L){const b=document.createElement("button");b.innerHTML=I[k]+"<span>"+L[k]+"</span>";b.style.cssText="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px";b.onclick=()=>start(k);$("langs").appendChild(b)}
+function showBest(){const C=["All 10","Easy","Medium","Hard"];$("best").innerHTML="<b>🏅 Best scores (WPM)</b><table style='width:100%;border-collapse:collapse;margin-top:6px'><tr><th></th>"+C.map(c=>"<th>"+c+"</th>").join("")+"</tr>"+Object.keys(L).filter(k=>k!=="my"&&k.slice(0,2)!=="o_").map(k=>"<tr><td>"+L[k]+"</td>"+C.map(c=>"<td style='text-align:center'>"+(best[k+"-"+c]||"–")+"</td>").join("")+"</tr>").join("")+"</table>"}
+showBest();
+applySharedGame();
+function getSharePayload(){
+  const view = (!$('s2').classList.contains('hide')) ? 'game' : (!$('s4').classList.contains('hide')) ? 'level' : 'menu';
+  return {lang:S.lang || 'py', level:S.lv || S.lb || 'Easy', view};
+}
+const GAME_URL = 'https://bachirimey-cyber.github.io/fast-programmer-game/';
+function buildShareUrl(){
+  const url = new URL(GAME_URL);
+  url.hash = 'share=' + encodeURIComponent(JSON.stringify(getSharePayload()));
+  return url.toString();
+}
+function updateShareLink(){
+  const link = buildShareUrl();
+  const input = $('shareLink');
+  if (input) input.value = link;
+  const img = $('shareQr');
+  if (img) img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=' + encodeURIComponent(link);
+}
+function openShare(){
+  updateShareLink();
+  $('shareModal').classList.remove('hide');
+}
+function closeShare(){
+  $('shareModal').classList.add('hide');
+}
+async function copyShareLink(){
+  const input = $('shareLink');
+  if (!input) return;
+  try{
+    await navigator.clipboard.writeText(input.value);
+    const old = input.value;
+    input.value = '✅ Link copied';
+    setTimeout(()=>input.value = old, 1200);
+  }catch(e){
+    input.focus();
+    input.select();
+  }
+}
+function applySharedGame(){
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  const raw = params.get('share');
+  if (!raw) return;
+  try{
+    const data = JSON.parse(decodeURIComponent(raw));
+    if (!data || !data.lang) return;
+    setTimeout(()=>{
+      const lang = Object.keys(L).includes(data.lang) ? data.lang : Object.keys(L).find(k => L[k] === data.lang) || 'py';
+      start(lang);
+      setTimeout(()=>{
+        if (data.view === 'game' || data.level) play(data.level || 'Easy');
+      }, 80);
+    }, 40);
+  }catch(e){}
+}
+function start(k){S.lang=k;if(window.updMy)updMy();$("lh").textContent=L[k]+" – choose your level";show("s4")}
+function play(l){const o=[...Array(10).keys()].sort((a,b)=>NM.indexOf(LV[a])-NM.indexOf(LV[b])||a-b);Object.assign(S,{lv:l,lb:l==="all"?"All 10":l,list:o.filter(i=>l==="all"||LV[i]===l),i:0,wpm:[],acc:[],res:[],quit:false,lives:3,score:0,combo:0,miss:{},prac:PR});load();show("s2")}
+function load(){if(S.quit)return;const s=D[S.lang][S.list[S.i]];S.ti=s[0];S.lock=false;S.ts=Date.now();const R=RULES[D[S.lang][S.list[S.i]][2]||LV[S.list[S.i]]];S.max=S.prac?999:R.e;S.lim=S.prac?1e9:R.b+s[1].length*R.pc;clearInterval(TM);TM=setInterval(tick,100);S.t=s[1];S.p=0;S.err=0;S.ok=0;S.t0=0;
+$("lg").innerHTML="<span style='display:inline-block;width:22px;vertical-align:middle;margin-right:6px'>"+I[S.lang]+"</span>"+L[S.lang];$("st").textContent=(D[S.lang][S.list[S.i]][2]||LV[S.list[S.i]])+" · program "+(S.i+1)+"/"+S.list.length;
+$("ti").textContent=s[0];{const n=s[3],l=$("les");if(n){l.classList.remove("hide");l.innerHTML="<b>🧱 "+n[0]+"</b><br>"+n[1]+"<br><span class=hint>How to write it: </span><code>"+n[2].replace(/</g,"&lt;")+"</code><br><span class=hint>Type the program below, comments included. The last lines show how to use it.</span>"}else l.classList.add("hide")}$("pg").style.width=(S.i/S.list.length*100)+"%";tdraw();stats();updHud();$("in").focus()}
+function tdraw(){let h="";const t=S.t;for(let i=0;i<t.length;i++){let ch=t[i]==="\n"?"↵\n":t[i].replace(/&/g,"&amp;").replace(/</g,"&lt;");
+h+=i<S.p?`<span class="d">${ch}</span>`:i==S.p?`<span class="c">${t[i]=="\n"?"↵":ch}</span>${t[i]=="\n"?"\n":""}`:`<span class="n">${ch}</span>`}
+$("code").innerHTML=h}
+function stats(){const m=S.t0?(Date.now()-S.t0)/60000:0;const w=m>0.002?Math.round(S.p/5/m):0;
+$("w").textContent=w;const tot=S.ok+S.err;$("a").textContent=(tot?Math.round(S.ok/tot*100):100)+"%";$("e").textContent=S.err+(S.prac?"":"/"+S.max);return w}
+let AC=null,snd=true;
+function tone(f,d,ty,v,at){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume();const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+(at||0);o.type=ty||"sine";o.frequency.value=f;o.connect(g);g.connect(AC.destination);g.gain.setValueAtTime(v||.06,s);g.gain.exponentialRampToValueAtTime(.0001,s+d);o.start(s);o.stop(s+d)}catch(e){}}
+const good=()=>snd&&tone(880,.07,"sine",.05),bad=()=>snd&&tone(150,.2,"sawtooth",.06),win=()=>{if(snd){tone(523,.12,"triangle",.07,0);tone(659,.12,"triangle",.07,.12);tone(784,.25,"triangle",.07,.24)}};
+function quit(){if(S.lock||S.quit)return;S.quit=true;clearInterval(TM);S.lock=true;end("quit")}
+function mult(){return 1+Math.min(4,Math.floor(S.combo/10))}
+function updHud(){$("hud").innerHTML=(S.prac?"\ud83c\udf93 Practice":"\u2764\ufe0f".repeat(Math.max(0,S.lives))+"\ud83d\udda4".repeat(Math.max(0,3-S.lives)))+"<span>\u2b50 Score <b>"+S.score+"</b></span><span>\ud83d\udd25 Combo <b>\u00d7"+mult()+"</b> ("+S.combo+")</span>"}
+function startBack(){let c=20;const b=$("bk"),f=()=>{b.textContent="\u21a9 Going back to choose a language in "+c+"s..."};f();BK=setInterval(()=>{c--;if(c<=0)show(S.lb==="OOP"?"o1":"s1");else f()},1000)}
+let TM,PR=false;const RULES={Easy:{b:12,pc:.9,e:15},Medium:{b:8,pc:.6,e:10},Hard:{b:5,pc:.45,e:5}};
+function tick(){if(S.prac){$("tmt").textContent="Practice mode: no timer";return}const r=S.lim-(Date.now()-S.ts)/1000;$("tmt").textContent="⏱ "+Math.max(0,Math.ceil(r))+"s left";$("tm").style.width=Math.max(0,r/S.lim*100)+"%";$("tm").style.background=r<S.lim*.25?"var(--bad)":"var(--ok)";if(r<=0)timeout()}
+const lose=()=>{if(snd){tone(220,.2,"square",.06,0);tone(150,.2,"square",.06,.2);tone(100,.4,"square",.06,.4)}};
+function timeout(){gameOver("Time's up")}
+function gameOver(why){if(S.lock)return;clearInterval(TM);S.lock=true;lose();S.lives--;S.combo=0;S.res.push({n:S.ti,ok:0,w:0,why});updHud();$("code").style.opacity=".4";$("ti").textContent="💥 "+why+"!"+(S.lives>0?" -1 \u2764\ufe0f":" You lost");S.i++;setTimeout(()=>{$("code").style.opacity="";if(S.lives<=0)end(true);else if(S.i>=S.list.length)end();else load()},1600)}
+const W=c=>/\w/.test(c||"");
+function skip(){while(S.t[S.p]===" "&&!(W(S.t[S.p-1])&&W(S.t[S.p+1])))S.p++}
+function key(c){if(S.lock||S.p>=S.t.length)return;if(c===" "&&S.t[S.p]!==" ")return;if(!S.t0)S.t0=Date.now();
+if(c===S.t[S.p]){S.p++;S.ok++;good();S.combo++;S.score+=mult();if(S.combo%10===0&&snd)tone(1175,.15,"triangle",.07);updHud();skip();
+if(S.p>=S.t.length)finish();else{tdraw();stats()}}
+else{S.err++;bad();S.combo=0;const x=S.t[S.p];S.miss[x]=(S.miss[x]||0)+1;stats();updHud();if(S.err>=S.max){gameOver("Too many mistakes");return}const e=$("code");e.classList.remove("shake");void e.offsetWidth;e.classList.add("shake")}}
+function finish(){win();clearInterval(TM);S.lock=true;const w=stats(),tot=S.ok+S.err;S.wpm.push(w);const fr=(Date.now()-S.ts)/1000/S.lim,ac=S.ok/(S.ok+S.err||1),st=ac>=.95&&fr<.6?3:ac>=.85?2:1;S.score+=st*100;S.res.push({n:S.ti,ok:1,w,st});updHud();S.acc.push(tot?S.ok/tot*100:100);tdraw();
+S.i++;if(S.i<S.list.length)setTimeout(load,350);else end()}
+function end(lost){const n=S.wpm.length||1,w=Math.round(S.wpm.reduce((a,b)=>a+b,0)/n),a=Math.round(S.acc.reduce((a,b)=>a+b,0)/n),p=S.res.filter(r=>r.ok).length,T=S.list.length;
+$("fw").textContent=w;$("fa").textContent=(p===T?"🏆 You win! ":p>=T/2?"👍 Good job! ":"💥 You lost. Try again! ")+"Passed "+p+"/"+T+" · Accuracy "+a+"% · "+L[S.lang]+" · "+S.lb;{const h=document.querySelector("#s3 h1");h.textContent=lost==="quit"?"🛑 Game ended":lost?"💥 You lost":p===T?"🏆 YOU WIN!":"🏁 Done!";const won=!lost&&p===T,why=lost==="quit"?"You ended the game":lost?S.res[S.res.length-1].why:"";const m=won?"You win! You passed all "+T+" programs. Your speed is "+w+" words per minute, with "+a+" percent accuracy.":lost==="quit"?"You ended the game. You passed "+p+" out of "+T+" programs. Come back and try again!":lost?"You lost. "+why+". You passed "+p+" out of "+T+" programs. Don't give up, try again!":"Finished. You passed "+p+" out of "+T+" programs.";const mb=$("msg");mb.textContent=lost==="quit"?"🛑 "+m:(won?"🏆 ":lost?"💥 ":"🏁 ")+m;mb.className="msg"+(won?"":" l");if((won||lost)&&snd)setTimeout(()=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(m);u.lang="en-US";speechSynthesis.speak(u)}catch(e){}},700)}
+{const RK=w>=50&&a>=95?"\ud83d\udc51 Master":w>=35&&a>=90?"\ud83d\udd76\ufe0f Hacker":w>=20?"\ud83d\udcbb Coder":"\ud83d\udc23 Beginner",ST=S.res.reduce((x,r)=>x+(r.st||0),0),tm=Object.entries(S.miss).sort((x,y)=>y[1]-x[1]).slice(0,5).map(([c,n])=>"<code>"+(c==="\n"?"\u21b5":c===" "?"\u2423":c.replace(/</g,"&lt;"))+"</code>\u00d7"+n).join(" ");$("rk").innerHTML="Score <b>"+S.score+"</b> \u00b7 Stars <b>"+ST+"</b> \u2b50 \u00b7 Rank <b>"+RK+"</b>"+(S.prac?" (practice)":"")+(tm?"<br>Most missed keys: "+tm:"")}
+const un=S.list.slice(S.res.length).map(i=>"⏭ "+D[S.lang][i][0]+" — not played");if(lost==="quit")$("fa").textContent="Game ended · Passed "+p+"/"+T+" · "+L[S.lang]+" · "+S.lb;else if(lost)$("fa").textContent="💥 You lost! "+S.res[S.res.length-1].why+" · Passed "+p+"/"+T+" · "+L[S.lang]+" · "+S.lb;$("rs").innerHTML=S.res.map(r=>(r.ok?"✅ ":"❌ ")+r.n+(r.ok?" — "+r.w+" WPM "+"\u2b50".repeat(r.st||0):" — "+r.why)).concat(un).join("<br>");
+const bk=S.lang+"-"+S.lb;if(S.lb!=='Custom'){if(!lost&&!S.prac&&p===T)gain(30,'tw');else if(!S.prac)gain(p*3)}if(!lost&&!S.prac&&(!best[bk]||w>best[bk])){best[bk]=w;try{localStorage.setItem("fp_best",JSON.stringify(best))}catch(e){}}
+show("s3");startBack()}
+const inp=$("in");
+inp.addEventListener("input",()=>{const v=inp.value;inp.value="";for(const c of v){const m=AR[c];if(m)kbNote();key(m||(c==="\r"?"\n":c))}});
+inp.addEventListener("keydown",e=>{if(e.key==="Tab")e.preventDefault()});
+document.addEventListener("click",()=>{if(!$("s2").classList.contains("hide"))inp.focus()});
+$("again").onclick=()=>play(S.lv);$("lvl").onclick=()=>show("s4");$("home").onclick=()=>show("s1");$("back").onclick=()=>show("s1");$("qt").onclick=quit;document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("s2").classList.contains("hide"))quit()});$("stay").onclick=()=>{clearInterval(BK);$("bk").textContent="Auto-return cancelled."};
+$("mu").onclick=()=>{snd=!snd;$("mu").textContent=snd?"🔊":"🔇"};
+$("shareBar").onclick=openShare;
+document.querySelectorAll(".shareBtn").forEach(btn=>btn.onclick=openShare);
+$("copyLink").onclick=copyShareLink;$("shareClose").onclick=closeShare;
+document.querySelectorAll("#s4 [data-l]").forEach(b=>b.onclick=()=>play(["Easy",,"Medium",,"Hard"][+b.dataset.l]));
+$("th").onclick=()=>{const r=document.documentElement,d=r.dataset.theme==="dark"||(!r.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches);r.dataset.theme=d?"light":"dark"};
+{const pb=document.createElement("button");pb.style.gridColumn="1/-1";pb.textContent="\ud83c\udf93 Practice mode: OFF";pb.onclick=()=>{PR=!PR;pb.textContent="\ud83c\udf93 Practice mode: "+(PR?"ON (no timer, no losing)":"OFF")};document.querySelector("#s4 .grid").append(pb)}
+{const H=["Relaxed time · 15 mistakes allowed","Tighter time · 10 mistakes allowed","Very fast · only 5 mistakes allowed"];document.querySelectorAll("#s4 [data-l] .hint").forEach((h,i)=>h.textContent=H[i])}
+{const ab=document.createElement("button");ab.className="pri";ab.style.gridColumn="1/-1";ab.textContent="🏆 All 10 programs (Easy → Hard)";ab.onclick=()=>play("all");document.querySelector("#s4 .grid").prepend(ab)}
+const NI={SW:0,LED:1,NOT:1,AND:2,OR:2,NAND:2,NOR:2,XOR:2},GF={NOT:a=>+!a[0],AND:a=>+(a[0]&&a[1]),OR:a=>+(a[0]||a[1]),NAND:a=>+!(a[0]&&a[1]),NOR:a=>+!(a[0]||a[1]),XOR:a=>+(a[0]!==a[1])};
+const TASKS={Easy:[
+{d:'Build a NOT circuit: LED Y is ON when switch A is OFF.',in:['A'],out:['Y'],f:a=>[+!a[0]],h:'Add 1 switch, 1 NOT gate and 1 LED. Wire switch → NOT → LED.'},
+{d:'Build an AND circuit: LED Y is ON only when A and B are both ON.',in:['A','B'],out:['Y'],f:a=>[a[0]&a[1]],h:'Use one AND gate. Wire A and B into its two inputs, then its output to the LED.'},
+{d:'Build an OR circuit: LED Y is ON when A or B (or both) is ON.',in:['A','B'],out:['Y'],f:a=>[a[0]|a[1]],h:'Use one OR gate with A and B as inputs.'},
+{d:'Build a NAND circuit: Y is OFF only when A and B are both ON.',in:['A','B'],out:['Y'],f:a=>[+!(a[0]&a[1])],h:'Use one NAND gate.'},
+{d:'Build a NOR circuit: Y is ON only when A and B are both OFF.',in:['A','B'],out:['Y'],f:a=>[+!(a[0]|a[1])],h:'Use one NOR gate.'}],
+Medium:[
+{d:'Build NAND (Y is OFF only when A and B are both ON) using ONLY an AND gate and a NOT gate.',in:['A','B'],out:['Y'],only:['AND','NOT'],f:a=>[+!(a[0]&a[1])],h:'AND first, then NOT: A,B → AND → NOT → LED.'},
+{d:'Build XOR: LED Y is ON when A and B are different. Any gates are allowed.',in:['A','B'],out:['Y'],f:a=>[a[0]^a[1]],h:'Y = (A OR B) AND (A NAND B). A and B each feed two gates.'},
+{d:'Build Y = (A AND B) OR C.',in:['A','B','C'],out:['Y'],f:a=>[(a[0]&a[1])|a[2]],h:'AND(A,B) first, then OR with C.'},
+{d:'Build Y = A AND (NOT B): ON only when A is ON and B is OFF.',in:['A','B'],out:['Y'],f:a=>[a[0]&+!a[1]],h:'Put B through a NOT gate, then AND the result with A.'},
+{d:'Build XNOR: Y is ON when A and B are the same. Any gates are allowed.',in:['A','B'],out:['Y'],f:a=>[+(a[0]===a[1])],h:'XNOR is XOR followed by NOT.'}],
+Hard:[
+{d:'Build a HALF ADDER: S is the sum bit of A+B, C is the carry. Use 2 switches and 2 LEDs (first LED = S, second = C).',in:['A','B'],out:['S','C'],f:a=>[a[0]^a[1],a[0]&a[1]],h:'S is an XOR gate and C is an AND gate. Both gates use the same A and B.'},
+{d:'Build a 2-to-1 MULTIPLEXER: Y = A when S is OFF, Y = B when S is ON. Switches in order: A, B, S.',in:['A','B','S'],out:['Y'],f:a=>[a[2]?a[1]:a[0]],h:'Y = (A AND NOT S) OR (B AND S).'},
+{d:'Build a FULL ADDER: inputs A, B, Cin; outputs Sum (first LED) and Cout (second LED).',in:['A','B','Cin'],out:['Sum','Cout'],f:a=>[a[0]^a[1]^a[2],(a[0]&a[1])|(a[2]&(a[0]^a[1]))],h:'Two half adders plus an OR gate: Sum = A XOR B XOR Cin. Cout = (A AND B) OR (Cin AND (A XOR B)).'},
+{d:'Build a MAJORITY circuit: Y is ON when at least 2 of A, B, C are ON.',in:['A','B','C'],out:['Y'],f:a=>[+(a[0]+a[1]+a[2]>=2)],h:'Y = (A AND B) OR (B AND C) OR (A AND C).'},
+{d:'Build a 3-input PARITY circuit: Y is ON when an odd number of A, B, C are ON.',in:['A','B','C'],out:['Y'],f:a=>[a[0]^a[1]^a[2]],h:'Chain two XOR gates: (A XOR B) XOR C.'}]};
+let G=null,GS=[],GI=0,GON=true;
+let CC={cs:[],ws:[],id:1,sel:null,pend:null,lv:'Easy',ti:0,mv:null};
+const gc=id=>CC.cs.find(c=>c.id===id),WW=c=>NI[c.t]>=2?78:58,HH=c=>NI[c.t]>=2?50:36;
+function lp(c,k){return k==='o'?[WW(c),HH(c)/2]:[0,NI[c.t]===1?HH(c)/2:HH(c)*(k==='i0'?.28:.72)]}
+const pp=(c,k)=>{const q=lp(c,k);return[c.x+q[0],c.y+q[1]]};
+function ev(id,seen){const c=gc(id);if(!c)return 0;if(c.t==='SW')return c.v;if(seen.includes(id))return 0;const s=seen.concat(id),a=[];for(let p=0;p<NI[c.t];p++){const w=CC.ws.find(w=>w.to===id&&w.p===p);a.push(w?ev(w.from,s):0)}return c.t==='LED'?a[0]:GF[c.t](a)}
+function lab(c){const l=CC.cs.filter(x=>x.t===c.t),i=l.indexOf(c),T=TASKS[CC.lv][CC.ti];return c.t==='SW'?(T.in[i]||'ABCDEFGH'[i]):(T.out[i]||'Y'+(i+1))}
+function pn(c,k){const q=lp(c,k),o=CC.pend&&CC.pend.id===c.id&&CC.pend.k===k,g=G&&G.k==='pin'&&G.v===c.id+'|'+k;return `<circle data-pin='${c.id}|${k}' cx='${q[0]}' cy='${q[1]}' r='${g?11:7}' class='${g?'gl':''}' style='fill:${g?'#f59e0b':o?'var(--ac)':'var(--card)'};stroke:var(--tx);stroke-width:2;cursor:crosshair'/>`}
+function draw(){let h='';
+for(const w of CC.ws){const a=gc(w.from),b=gc(w.to);if(!a||!b)continue;const[x1,y1]=pp(a,'o'),[x2,y2]=pp(b,'i'+w.p),m=(x1+x2)/2,k=w.from+'-'+w.to+'-'+w.p;h+=`<path data-w='${k}' d='M${x1} ${y1}C${m} ${y1} ${m} ${y2} ${x2} ${y2}' style='fill:none;stroke:${ev(w.from,[])?'var(--ok)':'var(--mu)'};stroke-width:${CC.sel==='w'+k?6:3.5};cursor:pointer'/>`}
+for(const c of CC.cs){const w=WW(c),hh=HH(c),io=c.t==='SW'||c.t==='LED',on=c.t==='SW'?c.v:c.t==='LED'?ev(c.id,[]):0,s=CC.sel===c.id,tg=G&&G.k==='tog'&&G.v===c.id,tx=io?lab(c)+'='+on:c.t;
+h+=`<g data-c='${c.id}' transform='translate(${c.x} ${c.y})' style='cursor:grab'><rect width='${w}' height='${hh}' rx='8' style='fill:${io&&on?'var(--ok)':'var(--bg)'};stroke:${tg?'#f59e0b':s?'var(--ac)':'var(--tx)'};stroke-width:${tg?6:s?3:1.5}' class='${tg?'gl':''}'/><text x='${w/2}' y='${hh/2+5}' text-anchor='middle' style='font:700 14px system-ui;fill:${io&&on?'#000':'var(--tx)'};pointer-events:none'>${tx}</text>`;
+for(let p=0;p<NI[c.t];p++)h+=pn(c,'i'+p);if(c.t!=='LED')h+=pn(c,'o');h+='</g>'}
+if(!CC.cs.length)h+=`<text x='350' y='190' text-anchor='middle' style='fill:var(--mu);font:16px system-ui'>Add switches, gates and an LED from the toolbar above</text>`;
+$('cv').innerHTML=h;ttbl()}
+function P(e){const r=$('cv').getBoundingClientRect(),k=700/r.width;return[(e.clientX-r.left)*k,(e.clientY-r.top)*k]}
+function pin(s){const[id,k]=s.split('|'),n=+id;if(!CC.pend||CC.pend.id===n||CC.pend.k[0]===k[0]){CC.pend={id:n,k};draw();gOK('pin',s);return}const a=CC.pend,o=a.k==='o'?a:{id:n,k},i=a.k==='o'?{id:n,k}:a;CC.pend=null;CC.ws=CC.ws.filter(w=>!(w.to===i.id&&w.p===+i.k[1]));CC.ws.push({from:o.id,to:i.id,p:+i.k[1]});draw();gOK('pin',s)}
+const cv=$('cv');
+cv.onpointerdown=e=>{const t=e.target,p=P(e);if(t.dataset.pin){pin(t.dataset.pin);return}const g=t.closest('[data-c]');if(g){const c=gc(+g.dataset.c);if(CC.lc&&CC.lc.k===c.id&&Date.now()-CC.lc.t<400){CC.lc=null;CC.sel=c.id;del();return}CC.mv={c,dx:p[0]-c.x,dy:p[1]-c.y,sx:p[0],sy:p[1],m:0};CC.sel=c.id;CC.pend=null;cv.setPointerCapture(e.pointerId);draw();return}if(t.dataset.w){const k='w'+t.dataset.w;if(CC.lc&&CC.lc.k===k&&Date.now()-CC.lc.t<400){CC.lc=null;CC.sel=k;del();return}CC.lc={k,t:Date.now()};CC.sel=k;CC.pend=null;draw();return}CC.sel=null;CC.pend=null;draw()};
+cv.onpointermove=e=>{const m=CC.mv;if(!m)return;const p=P(e);if(Math.abs(p[0]-m.sx)+Math.abs(p[1]-m.sy)>6)m.m=1;if(m.m){m.c.x=Math.max(0,Math.min(700-WW(m.c),p[0]-m.dx));m.c.y=Math.max(0,Math.min(380-HH(m.c),p[1]-m.dy));draw()}};
+cv.onpointerup=()=>{const m=CC.mv;CC.mv=null;if(m&&!m.m){CC.lc={k:m.c.id,t:Date.now()};if(m.c.t==='SW'){m.c.v^=1;draw();gOK('tog',m.c.id)}}};
+function del(){const s=CC.sel;if(typeof s==='number'){CC.cs=CC.cs.filter(c=>c.id!==s);CC.ws=CC.ws.filter(w=>w.from!==s&&w.to!==s)}else if(s)CC.ws=CC.ws.filter(w=>'w'+w.from+'-'+w.to+'-'+w.p!==s);CC.sel=null;draw()}
+const SOL={Easy:[
+[['SW','NOT','LED'],[[1,2,0],[2,3,0]]],
+[['SW','SW','AND','LED'],[[1,3,0],[2,3,1],[3,4,0]]],
+[['SW','SW','OR','LED'],[[1,3,0],[2,3,1],[3,4,0]]],
+[['SW','SW','NAND','LED'],[[1,3,0],[2,3,1],[3,4,0]]],
+[['SW','SW','NOR','LED'],[[1,3,0],[2,3,1],[3,4,0]]]],
+Medium:[
+[['SW','SW','AND','NOT','LED'],[[1,3,0],[2,3,1],[3,4,0],[4,5,0]]],
+[['SW','SW','XOR','LED'],[[1,3,0],[2,3,1],[3,4,0]]],
+[['SW','SW','SW','AND','OR','LED'],[[1,4,0],[2,4,1],[4,5,0],[3,5,1],[5,6,0]]],
+[['SW','SW','NOT','AND','LED'],[[2,3,0],[1,4,0],[3,4,1],[4,5,0]]],
+[['SW','SW','XOR','NOT','LED'],[[1,3,0],[2,3,1],[3,4,0],[4,5,0]]]],
+Hard:[
+[['SW','SW','XOR','AND','LED','LED'],[[1,3,0],[2,3,1],[1,4,0],[2,4,1],[3,5,0],[4,6,0]]],
+[['SW','SW','SW','NOT','AND','AND','OR','LED'],[[3,4,0],[1,5,0],[4,5,1],[2,6,0],[3,6,1],[5,7,0],[6,7,1],[7,8,0]]],
+[['SW','SW','SW','XOR','XOR','AND','AND','OR','LED','LED'],[[1,4,0],[2,4,1],[4,5,0],[3,5,1],[1,6,0],[2,6,1],[4,7,0],[3,7,1],[6,8,0],[7,8,1],[5,9,0],[8,10,0]]],
+[['SW','SW','SW','AND','AND','AND','OR','OR','LED'],[[1,4,0],[2,4,1],[2,5,0],[3,5,1],[1,6,0],[3,6,1],[4,7,0],[5,7,1],[7,8,0],[6,8,1],[8,9,0]]],
+[['SW','SW','SW','XOR','XOR','LED'],[[1,4,0],[2,4,1],[4,5,0],[3,5,1],[5,6,0]]]]};
+function nm(ty,i){const t=ty[i],n=ty.slice(0,i+1).filter(x=>x===t).length-1,T=TASKS[CC.lv][CC.ti],tot=ty.filter(x=>x===t).length;return t==='SW'?'switch '+(T.in[n]||n+1):t==='LED'?'LED '+(T.out[n]||n+1):t+' gate'+(tot>1?' #'+(n+1):'')}
+function gBuild(){G=null;GS=[];GI=0;if(GON&&CC.lv!=='Free'){const[ty,ws]=SOL[CC.lv][CC.ti],NMS={SW:'Switch',LED:'LED'};
+ty.forEach((t,i)=>GS.push({k:'add',v:t,msg:'Click the glowing + '+(NMS[t]||t)+' button to add the '+nm(ty,i)+'.'}));
+ws.forEach(([a,b,p])=>{GS.push({k:'pin',v:a+'|o',msg:'Wire: click the glowing OUTPUT pin (right circle) of the '+nm(ty,a-1)+'.'});GS.push({k:'pin',v:b+'|i'+p,msg:'Now click the glowing INPUT pin (left circle) of the '+nm(ty,b-1)+'.'})});
+GS.push({k:'tog',v:1,msg:'Test it: click the glowing switch to turn it ON and watch the wires and the LED.'});
+GS.push({k:'check',v:1,msg:'Press the glowing Check button.'});G=GS[0]}gShow()}
+function gShow(){document.querySelectorAll('#tools button,#ck').forEach(b=>b.classList.remove('gl'));
+if(!GON){$('cgm').textContent='Guide is off.';$('cgs').textContent='Turn guide on'}
+else if(!G){$('cgm').textContent='✨ Guide complete! Now press Next task below.';$('cgs').textContent='Skip guide'}
+else{$('cgm').textContent='👉 Step '+(GI+1)+'/'+GS.length+': '+G.msg;$('cgs').textContent='Skip guide';if(G.k==='add')document.querySelectorAll('#tools button').forEach(b=>{if(b.dataset.t===G.v)b.classList.add('gl')});if(G.k==='check')$('ck').classList.add('gl')}
+draw()}
+function gNext(){GI++;G=GS[GI]||null;gShow()}
+function gOK(k,v){if(G&&G.k===k&&G.v===v)gNext()}
+function newTask(){const T=TASKS[CC.lv][CC.ti];Object.assign(CC,{cs:[],ws:[],id:1,sel:null,pend:null,done:0});$('ct').textContent='🔌 '+CC.lv+' · task '+(CC.ti+1)+'/'+TASKS[CC.lv].length;$('ctask').textContent='🎯 Task: '+T.d;$('cres').innerHTML='';gBuild();$('cg').style.display=CC.lv==='Free'?'none':'';if(CC.lv==='Free')$('ct').textContent='🧪 Free build'}
+function check(){if(CC.lv==='Free'){tbl();return}const T=TASKS[CC.lv][CC.ti],sw=CC.cs.filter(c=>c.t==='SW'),ld=CC.cs.filter(c=>c.t==='LED');let m='';
+if(sw.length!==T.in.length||ld.length!==T.out.length)m='You need '+T.in.length+' switch(es) and '+T.out.length+' LED(s). You have '+sw.length+' and '+ld.length+'.';
+else if(T.only&&CC.cs.some(c=>c.t!=='SW'&&c.t!=='LED'&&!T.only.includes(c.t)))m='Use only these gates: '+T.only.join(', ')+'.';
+if(m){$('cres').textContent='⚠️ '+m;return}
+const old=sw.map(c=>c.v);let ok=true,bad=-1,rows='';
+for(let k=0;k<1<<sw.length;k++){sw.forEach((c,i)=>c.v=(k>>(sw.length-1-i))&1);const inp=sw.map(c=>c.v),ex=T.f(inp).map(Number),got=ld.map(c=>ev(c.id,[])),g=ex.every((x,i)=>x===got[i]);ok=ok&&g;if(!g&&bad<0)bad=k;rows+=`<tr><td>${inp.join(' ')}</td><td>${ex.join(' ')}</td><td>${got.join(' ')}</td><td>${g?'✅':'❌'}</td></tr>`}
+sw.forEach((c,i)=>c.v=bad>=0?(bad>>(sw.length-1-i))&1:old[i]);draw();
+$('cres').innerHTML=(ok?'🎉 <b>Correct! Task complete.</b>':'❌ Not yet. I set the switches to the first wrong row so you can see what your circuit does. Compare it with the expected result.')+`<table style='margin-top:8px'><tr><th>Inputs (${T.in.join(' ')})</th><th>Expected (${T.out.join(' ')})</th><th>Yours</th><th></th></tr>${rows}</table>`+(ok?`<p><button class='pri' id='cnx'>${CC.ti+1<TASKS[CC.lv].length?'Next task ➡':'Finish level 🏆'}</button></p>`:'');
+if(ok){win();gOK('check',1);if(!CC.done){CC.done=1;const g=CC.cs.filter(c=>c.t!=='SW'&&c.t!=='LED').length,sg=SOL[CC.lv][CC.ti][0].filter(t=>t!=='SW'&&t!=='LED').length,st=g<=sg?3:g<=sg+2?2:1;gain(10*st,'cd');$('cres').insertAdjacentHTML('afterbegin','<p>'+'⭐'.repeat(st)+' +'+10*st+' XP</p>')}$('cnx').onclick=()=>{CC.ti++;if(CC.ti>=TASKS[CC.lv].length){CC.ti=0;show('c1')}else newTask()}}}
+[['SW','Switch'],['LED','LED'],['NOT','NOT'],['AND','AND'],['OR','OR'],['NAND','NAND'],['NOR','NOR'],['XOR','XOR']].forEach(([t,n])=>{const b=document.createElement('button');b.textContent='+ '+n;b.style.padding='8px';b.dataset.t=t;b.onclick=()=>{const ns=CC.cs.filter(c=>c.t===t).length,ng=CC.cs.filter(c=>c.t!=='SW'&&c.t!=='LED').length,q=t==='SW'?[20,20+(ns%4)*80]:t==='LED'?[620,20+(ns%4)*80]:[160+(ng%4)*110,20+(((ng/4)|0)%4)*80];CC.cs.push({id:CC.id++,t,x:q[0],y:q[1],v:0});draw();gOK('add',t)};$('tools').append(b)});
+$('m1').onclick=()=>show('s1');$('m2').onclick=()=>show('c1');$('cback').onclick=()=>show('s0');$('cx').onclick=()=>show('s0');
+document.querySelectorAll('#c1 [data-c]').forEach(b=>b.onclick=()=>{CC.lv=b.dataset.c;CC.ti=0;newTask();show('c2')});
+$('ck').onclick=check;$('cdel').onclick=del;$('cclr').onclick=()=>{CC.cs=[];CC.ws=[];CC.sel=null;CC.pend=null;CC.id=1;gBuild()};$('cgs').onclick=()=>{GON=!GON;if(GON){CC.cs=[];CC.ws=[];CC.id=1;CC.sel=null;CC.pend=null}gBuild()};
+$('chint').onclick=()=>{$('cres').textContent='💡 '+TASKS[CC.lv][CC.ti].h};
+[$('chelp'),$('chb')].forEach(b=>b.onclick=()=>$('hm').classList.remove('hide'));$('hclose').onclick=()=>$('hm').classList.add('hide');
+document.addEventListener('keydown',e=>{if(!$('c2').classList.contains('hide')&&(e.key==='Delete'||e.key==='Backspace'))del()});
+{const bb=document.createElement('button');bb.textContent='← Back to game choice';bb.onclick=()=>show('s0');$('s1').append(bb)}
+TASKS.Free=[{d:'Free build: build anything you want. Press Check to see the formula and the truth table of your circuit.',in:[],out:[],f:()=>[],h:'Try combining gates. What happens if you feed the same switch into both inputs of a NAND?'}];SOL.Free=[[[],[]]];
+let PG={xp:0,cd:0,tw:0};try{Object.assign(PG,JSON.parse(localStorage.getItem('fp_prog')||'{}'))}catch(e){}
+function gain(x,k){PG.xp+=x;if(k)PG[k]++;try{localStorage.setItem('fp_prog',JSON.stringify(PG))}catch(e){}showXP()}
+function showXP(){const b=[PG.cd>=1&&'🔌 First circuit',PG.cd>=10&&'🧠 Circuit master',PG.tw>=1&&'🏆 First win',PG.tw>=5&&'🔥 Champion'].filter(Boolean);$('xp').innerHTML='⭐ Level <b>'+(1+(PG.xp/100|0))+'</b> · '+PG.xp+' XP'+(b.length?' · '+b.join(' · '):'')}
+function ex(id,seen){const c=gc(id);if(!c)return '?';if(c.t==='SW')return lab(c);if(seen.includes(id))return '?';const s=seen.concat(id),a=[];for(let p=0;p<NI[c.t];p++){const w=CC.ws.find(w=>w.to===id&&w.p===p);a.push(w?ex(w.from,s):'0')}return c.t==='LED'?a[0]:c.t==='NOT'?'NOT '+a[0]:'('+a[0]+' '+c.t+' '+a[1]+')'}
+function tbl(){const sw=CC.cs.filter(c=>c.t==='SW'),ld=CC.cs.filter(c=>c.t==='LED');if(!sw.length||!ld.length||sw.length>6){$('cres').textContent='⚠️ Add 1 to 6 switches and at least 1 LED first.';return}const old=sw.map(c=>c.v);let r='';for(let k=0;k<1<<sw.length;k++){sw.forEach((c,i)=>c.v=(k>>(sw.length-1-i))&1);r+='<tr><td>'+sw.map(c=>c.v).join(' ')+'</td><td>'+ld.map(c=>ev(c.id,[])).join(' ')+'</td></tr>'}sw.forEach((c,i)=>c.v=old[i]);draw();$('cres').innerHTML='<b>Formula</b><br>'+ld.map(c=>lab(c)+' = '+ex(c.id,[])).join('<br>')+'<table style=margin-top:8px><tr><th>'+sw.map(c=>lab(c)).join(' ')+'</th><th>'+ld.map(c=>lab(c)).join(' ')+'</th></tr>'+r+'</table>'}
+$('csol').onclick=()=>{if(CC.lv==='Free')return;const[ty,ws]=SOL[CC.lv][CC.ti];Object.assign(CC,{cs:[],ws:[],id:1,sel:null,pend:null,done:1});ty.forEach(t=>document.querySelector('#tools button[data-t='+t+']').onclick());ws.forEach(([a,b,p])=>CC.ws.push({from:a,to:b,p}));GON=false;gBuild();$('cres').textContent='🪄 This is one solution. Click the switches to test it, then press Check.'};
+$('csv').onclick=()=>{try{localStorage.setItem('fp_circ',JSON.stringify({cs:CC.cs,ws:CC.ws,id:CC.id}));$('cres').textContent='💾 Saved in this browser.'}catch(e){$('cres').textContent='Could not save here.'}};
+$('cld').onclick=()=>{try{const d=JSON.parse(localStorage.getItem('fp_circ'));if(!d)throw 0;Object.assign(CC,{cs:d.cs,ws:d.ws,id:d.id,sel:null,pend:null,done:1});GON=false;gBuild();$('cres').textContent='📂 Loaded your saved circuit.'}catch(e){$('cres').textContent='Nothing saved yet.'}};
+showXP();
+function ttbl(){const el=$('tt'),sw=CC.cs.filter(c=>c.t==='SW'),ld=CC.cs.filter(c=>c.t==='LED'),T=TASKS[CC.lv]&&TASKS[CC.lv][CC.ti];
+if(!sw.length||!ld.length){el.innerHTML='<b>📋 Truth table</b><p class=hint>Add at least 1 switch and 1 LED. The table fills in by itself.</p>';return}
+if(sw.length>5){el.innerHTML='<b>📋 Truth table</b><p class=hint>Too many switches (max 5).</p>';return}
+const old=sw.map(c=>c.v),cmp=CC.lv!=='Free'&&T&&T.in.length===sw.length&&T.out.length===ld.length;let r='';
+for(let k=0;k<1<<sw.length;k++){sw.forEach((c,i)=>c.v=(k>>(sw.length-1-i))&1);const inp=sw.map(c=>c.v),got=ld.map(c=>ev(c.id,[])),cur=inp.join()===old.join();let ex='',g='';if(cmp){const e=T.f(inp).map(Number);ex='<td>'+e.join(' ')+'</td>';g='<td>'+(e.every((x,i)=>x===got[i])?'✅':'❌')+'</td>'}
+r+='<tr'+(cur?' style=background:var(--bd)':'')+'><td>'+inp.join(' ')+'</td>'+ex+'<td>'+got.join(' ')+'</td>'+g+'</tr>'}
+sw.forEach((c,i)=>c.v=old[i]);
+el.innerHTML='<b>📋 Truth table</b><table style=width:100%;margin-top:6px><tr><th>'+sw.map(c=>lab(c)).join(' ')+'</th>'+(cmp?'<th>Goal</th>':'')+'<th>'+ld.map(c=>lab(c)).join(' ')+'</th>'+(cmp?'<th></th>':'')+'</tr>'+r+'</table><p class=hint>The highlighted row is your switches now.'+(cmp?' Goal = what the task needs.':'')+'</p>'}
+function playList(l,list,lb,pr){Object.assign(S,{lv:l,lb,list,i:0,wpm:[],acc:[],res:[],quit:false,lives:3,score:0,combo:0,miss:{},prac:PR||!!pr});load();show('s2')}
+let MYL=[];try{MYL=JSON.parse(localStorage.getItem('fp_my')||'[]')}catch(e){}
+D.my=[];L.my='My programs';I.my=`<svg viewBox='0 0 48 48' width='52' height='52'><rect x='4' y='4' width='40' height='40' rx='10' fill='#a855f7'/><text x='24' y='32' font-size='20' font-weight='700' text-anchor='middle' fill='#fff' font-family='Arial,sans-serif'>AI</text></svg>`;
+MYL.forEach(m=>D.my.push([(m.lg&&L[m.lg]&&!m.t.includes(' - ')?L[m.lg]+' - ':'')+m.t,m.c,m.lv]));
+function updMy(){const n=D.my.length,b=$('mybtn');if(b)b.textContent='📚 My programs ('+n+')'}
+const asc=s=>[...s].filter(ch=>ch==='\n'||(ch>=' '&&ch<='~')).join('');
+const LK={c:'c','c++':'cpp',cpp:'cpp',python:'py',py:'py',java:'java',javascript:'js',js:'js'},SYN={sum:['sum','add','total'],max:['max','largest','biggest','highest'],factorial:['factorial'],fibonacci:['fibonacci','fib'],prime:['prime'],palindrome:['palindrome'],bubble:['bubble','sort'],selection:['selection','sort'],binary:['binary','search'],even:['even','odd'],swap:['swap','exchange'],gcd:['gcd','divisor']};
+function offline(idea,lg){const k=LK[lg.toLowerCase()];if(!k)return null;const w=idea.toLowerCase();let b=null,bs=0;D[k].slice(0,10).forEach((s,i)=>{const t=s[0].toLowerCase();let sc=0;for(const key in SYN)if(t.includes(key)&&SYN[key].some(x=>w.includes(x)))sc++;if(sc>bs){bs=sc;b=[s[0],s[1],LV[i]]}});return b}
+function off(idea,lg,st,why){const o=offline(idea,lg);if(!o){st.textContent=why+' Without Claude I only know common ideas (sum, max, factorial, fibonacci, prime, palindrome, sorting, binary search, gcd, even numbers, swap) in C, C++, Python, Java and JavaScript. Try one of those.';return}
+const tt=lg+' - '+o[0]+' (built-in)';D.my.push([tt,o[1],o[2]]);MYL.push({t:tt,c:o[1],lv:o[2]});try{localStorage.setItem('fp_my',JSON.stringify(MYL))}catch(e){}S.lang='my';updMy();st.textContent='';playList(o[2],[D.my.length-1],'Custom')}
+async function gen(){const idea=$('ci').value.trim(),lg=($('cl').value.trim()||'Python').slice(0,24),lv=$('clv').value,st=$('cst'),b=$('cgo');
+if(idea.length<5){st.textContent='Write your idea first, a few words at least.';return}
+b.disabled=true;st.textContent='Claude is writing your program...';
+try{const sm=window.claude&&claude.use?await claude.use('sample'):null;if(!sm){off(idea,lg,st,'You are outside Claude, so Claude cannot write it here.');return}
+const n={Easy:'3 to 6',Medium:'6 to 10',Hard:'10 to 16'}[lv];
+const r=await sm('You write short code snippets for a typing practice game for beginner programmers.\nPlayer request: '+idea+'\nLanguage: '+lg+'\nLevel: '+lv+' ('+n+' lines).\nRules: one self-contained snippet that really does what the request says and is correct in that language. Plain ASCII only. No comments. No blank lines. 2 spaces per indent level (4 in Python). No tabs. No markdown fences. Maximum 600 characters. If the request is not a harmless programming idea, reply with only the word REFUSE.\nFormat: first line is a short title (max 4 words), second line is ---, then the code and nothing else.',{modelTier:'quick'});
+let t=(r.text||'').trim();if(/^REFUSE/i.test(t)){st.textContent='Claude could not make that one. Try a different programming idea.';return}
+const ls=t.split('```').join('').trim().split('\n'),k=ls.findIndex(l=>l.trim()==='---');if(k<1)throw 0;
+const title=asc(ls[0]).trim().slice(0,28),code=asc(ls.slice(k+1).join('\n').split('\t').join('  ')).split('\n').map(l=>l.trimEnd()).filter(l=>l.trim()).join('\n');
+if(code.length<8||code.length>800||code.split('\n').length>22)throw 0;
+const tt=lg+' - '+(title||'My program');D.my.push([tt,code,lv]);MYL.push({t:tt,c:code,lv});try{localStorage.setItem('fp_my',JSON.stringify(MYL))}catch(e){}
+S.lang='my';updMy();st.textContent='';playList(lv,[D.my.length-1],'Custom')
+}catch(e){off(idea,lg,st,e&&e.code==='not_granted'?'Permission was not given, so Claude could not write it.':e&&e.code==='rate_limited'?'Too many requests to Claude right now.':'Claude answer was not usable.')}finally{b.disabled=false}}
+
+$('cgo').onclick=gen;$('cbk5').onclick=()=>show('s1');
+{const g=$('langs'),a=document.createElement('button');a.style.gridColumn='1/-1';a.textContent='✨ Order your own program from Claude';a.onclick=()=>{$('cst').textContent='';show('s5');setTimeout(()=>$('ci').focus(),50)};
+const m=document.createElement('button');m.id='mybtn';m.style.gridColumn='1/-1';m.onclick=()=>{if(D.my.length){S.lang='my';playList('Medium',D.my.map((_,i)=>i),'Custom')}};g.append(a,m);updMy()}
+const CON=[['Class and Object','A class is a blueprint. An object is one thing made from that blueprint.'],['Constructor','A special function that runs when an object is created and sets its starting values.'],['Method','A function that belongs to a class. It describes what an object can do.'],['Encapsulation','Hide the data (private) and let other code use it only through methods.'],['Inheritance','A child class reuses the fields and methods of a parent class.'],['Polymorphism','Different classes answer the same method call in their own way (overriding).']];
+const OD={
+cpp:[['class Name { public: fields };  then  Name obj; inside main()',`class Dog { // class: a blueprint
+public:
+  int age; // field
+};
+int main() {
+  Dog d; // object
+  d.age = 3;
+  return 0;
+}`],
+['ClassName(params) { ... }   (same name as the class, no return type)',`class Dog {
+public:
+  int age;
+  Dog(int a) { // constructor
+    age = a;
+  }
+};
+int main() {
+  Dog d(3); // calls the constructor
+  return 0;
+}`],
+['returnType name(params) { ... }   inside the class',`class Dog {
+public:
+  int age;
+  void birthday() { // method
+    age++;
+  }
+};
+int main() {
+  Dog d;
+  d.age = 3;
+  d.birthday(); // call the method
+  return 0;
+}`],
+['private: data   public: methods that read or change it',`class Account {
+private: // hidden from outside
+  int balance = 0;
+public: // open to everyone
+  int getBalance() {
+    return balance;
+  }
+  void deposit(int x) {
+    if (x > 0) balance += x;
+  }
+};
+int main() {
+  Account a;
+  a.deposit(50);
+  return 0;
+}`],
+['class Child : public Parent { };',`class Animal { // parent
+public:
+  int legs = 4;
+};
+class Dog : public Animal { // child inherits
+public:
+  int age;
+};
+int main() {
+  Dog d;
+  d.legs = 4;
+  return 0;
+}`],
+['virtual in the parent method, override in the child method',`class Animal {
+public:
+  virtual void sound() { // can be overridden
+    cout << "...";
+  }
+};
+class Dog : public Animal {
+public:
+  void sound() override { // new version
+    cout << "Woof";
+  }
+};
+int main() {
+  Dog d;
+  d.sound();
+  return 0;
+}`]],
+py:[['class Name:  then  obj = Name()   (Python needs no main)',`class Dog: # class: a blueprint
+    pass
+d = Dog() # object
+d.age = 3`],
+['def __init__(self, params):   (self is the new object)',`class Dog:
+    def __init__(self, age): # constructor
+        self.age = age
+d = Dog(3) # calls the constructor`],
+['def method(self, params):   inside the class',`class Dog:
+    def __init__(self):
+        self.age = 0
+    def birthday(self): # method
+        self.age += 1
+d = Dog()
+d.birthday() # call the method`],
+['self.__name is a private attribute; use methods to read or change it',`class Account:
+    def __init__(self):
+        self.__balance = 0 # private: hidden
+    def get_balance(self): # getter
+        return self.__balance
+    def deposit(self, x): # setter
+        if x > 0:
+            self.__balance += x
+a = Account()
+a.deposit(50)`],
+['class Child(Parent):',`class Animal: # parent
+    def eat(self):
+        print("eating")
+class Dog(Animal): # child inherits
+    pass
+Dog().eat()`],
+['define the same method name in the child class',`class Animal:
+    def sound(self):
+        print("...")
+class Dog(Animal):
+    def sound(self): # new version
+        print("Woof")
+Dog().sound()`]],
+java:[['class Name { fields }  then  Name obj = new Name(); inside main',`class Dog { // class: a blueprint
+  int age; // field
+}
+public class Main {
+  public static void main(String[] args) {
+    Dog d = new Dog(); // object
+    d.age = 3;
+  }
+}`],
+['ClassName(params) { ... }   (same name as the class, no return type)',`class Dog {
+  int age;
+  Dog(int a) { // constructor
+    age = a;
+  }
+}
+public class Main {
+  public static void main(String[] args) {
+    Dog d = new Dog(3); // calls the constructor
+  }
+}`],
+['returnType name(params) { ... }   inside the class',`class Dog {
+  int age;
+  void birthday() { // method
+    age++;
+  }
+}
+public class Main {
+  public static void main(String[] args) {
+    Dog d = new Dog();
+    d.birthday(); // call the method
+  }
+}`],
+['private type field;   public getter and setter methods',`class Account {
+  private int balance; // hidden from outside
+  int getBalance() { // getter
+    return balance;
+  }
+  void deposit(int x) { // setter
+    if (x > 0) balance += x;
+  }
+}
+public class Main {
+  public static void main(String[] args) {
+    Account a = new Account();
+    a.deposit(50);
+  }
+}`],
+['class Child extends Parent { }',`class Animal { // parent
+  void eat() {
+    System.out.println("eating");
+  }
+}
+class Dog extends Animal { // child inherits
+}
+public class Main {
+  public static void main(String[] args) {
+    new Dog().eat();
+  }
+}`],
+['@Override   then the same method name with a new body',`class Animal {
+  void sound() {
+    System.out.println("...");
+  }
+}
+class Dog extends Animal {
+  @Override // new version of the method
+  void sound() {
+    System.out.println("Woof");
+  }
+}
+public class Main {
+  public static void main(String[] args) {
+    new Dog().sound();
+  }
+}`]],
+js:[['class Name { }  then  const obj = new Name();   (JavaScript needs no main)',`class Dog { // class: a blueprint
+}
+const d = new Dog(); // object
+d.age = 3;`],
+['constructor(params) { this.field = value; }',`class Dog {
+  constructor(age) { // constructor
+    this.age = age;
+  }
+}
+const d = new Dog(3); // calls the constructor`],
+['methodName(params) { ... }   inside the class (no function keyword)',`class Dog {
+  constructor() {
+    this.age = 0;
+  }
+  birthday() { // method
+    this.age++;
+  }
+}
+const d = new Dog();
+d.birthday(); // call the method`],
+['#field is private; use methods to read or change it',`class Account {
+  #balance = 0; // private: hidden
+  getBalance() { // getter
+    return this.#balance;
+  }
+  deposit(x) { // setter
+    if (x > 0) this.#balance += x;
+  }
+}
+const a = new Account();
+a.deposit(50);`],
+['class Child extends Parent { }',`class Animal { // parent
+  eat() {
+    console.log("eating");
+  }
+}
+class Dog extends Animal { // child inherits
+}
+new Dog().eat();`],
+['same method name in the child (super.method() calls the parent version)',`class Animal {
+  sound() {
+    console.log("...");
+  }
+}
+class Dog extends Animal {
+  sound() { // new version
+    console.log("Woof");
+  }
+}
+new Dog().sound();`]]};
+Object.keys(OD).forEach(k=>{L['o_'+k]=L[k]+' OOP';I['o_'+k]=I[k];D['o_'+k]=OD[k].map((x,i)=>[CON[i][0],x[1],'Easy',[CON[i][0],CON[i][1]+(k==='c'?' C has no classes, so we imitate it with structs and functions.':''),x[0]]]);
+const b=document.createElement('button');b.innerHTML=I[k]+'<span>'+L[k]+'</span>';b.style.cssText='display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px';b.onclick=()=>{S.lang='o_'+k;playList('Easy',[0,1,2,3,4,5],'OOP',true)};$('ol').append(b)});
+$('ob').onclick=()=>show('s0');
+{const b=document.createElement('button');b.id='m3';b.style.padding='22px';b.innerHTML='🧱 OOP<br><span class=hint>Learn classes, constructors, inheritance...</span>';b.onclick=()=>show('o1');document.querySelector('#s0 .grid').append(b)}
+const MX={
+c:{S:{'Sum 1 to 10':'','Find the max':'int a[] = {3, 9, 2};\nint n = 3;','Bubble sort':'int a[] = {5, 2, 9};\nint n = 3;','Count evens':'int a[] = {1, 2, 3, 4};\nint n = 4;','Swap two values':'int a = 1, b = 2;','Selection sort':'int a[] = {5, 2, 9};\nint n = 3;'},
+ F:{'Factorial':'printf("%d", fact(5));','Is prime':'printf("%d", isPrime(7));','GCD':'printf("%d", gcd(12, 18));'},
+ R:{'Binary search':['int search(int a[], int n, int x) {','int a[] = {1, 3, 5, 7};\nprintf("%d", search(a, 4, 5));']}},
+cpp:{S:{'Sum a vector':'vector<int> v = {1, 2, 3};','Find the max':'vector<int> v = {3, 9, 2};','Bubble sort':'int a[] = {5, 2, 9};\nint n = 3;','Count evens':'vector<int> v = {1, 2, 3, 4};','Swap two values':'int a = 1, b = 2;','Selection sort':'int a[] = {5, 2, 9};\nint n = 3;'},
+ F:{'Fibonacci':'cout << fib(6);','Is palindrome':'cout << isPal("abba");','GCD':'cout << gcd(12, 18);'},
+ R:{'Binary search':['int search(vector<int> v, int x) {','vector<int> v = {1, 3, 5, 7};\ncout << search(v, 5);']}},
+java:{S:{'Sum 1 to 10':'','Find the max':'int[] a = {3, 9, 2};','Bubble sort':'int[] a = {5, 2, 9};','Count evens':'int[] a = {1, 2, 3, 4};','Swap two values':'int a = 1, b = 2;','Selection sort':'int[] a = {5, 2, 9};'},
+ F:{'Factorial':'System.out.println(fact(5));','Is prime':'System.out.println(isPrime(7));','GCD':'System.out.println(gcd(12, 18));'},
+ R:{'Binary search':['static int search(int[] a, int x) {','int[] a = {1, 3, 5, 7};\nSystem.out.println(search(a, 5));']}}};
+const ind=(c,n)=>c.split('\n').map(l=>' '.repeat(n)+l).join('\n');
+function addMain(k,s){const t=s[0],c=s[1],X=MX[k],J=k==='java';let body='',defs='';
+if(t in X.S){body=(X.S[t]?X.S[t]+'\n':'')+c;}else if(t in X.F){defs=c;body=X.F[t];}else if(t in X.R){defs=X.R[t][0]+'\n'+ind(c,2)+'\n';body=X.R[t][1];}else{return s;}
+const mb=J?'public static void main(String[] args) {\n'+ind(body,2)+'\n}':'int main() {\n'+ind(body,2)+'\n  return 0;\n}';
+return [t,J?'public class Main {\n'+(defs?ind(defs,2)+'\n':'')+ind(mb,2)+'\n}':(defs?defs+'\n':'')+mb].concat(s.slice(2));}
+['c','cpp','java'].forEach(k=>{D[k]=D[k].map(s=>addMain(k,s))});
+const CODES={Backquote:['`','~'],Digit1:['1','!'],Digit2:['2','@'],Digit3:['3','#'],Digit4:['4','$'],Digit5:['5','%'],Digit6:['6','^'],Digit7:['7','&'],Digit8:['8','*'],Digit9:['9','('],Digit0:['0',')'],Minus:['-','_'],Equal:['=','+'],BracketLeft:['[','{'],BracketRight:[']','}'],Backslash:[String.fromCharCode(92),'|'],Semicolon:[';',':'],Quote:["'",'"'],Comma:[',','<'],Period:['.','>'],Slash:['/','?']};
+function mapCode(e){const c=e.code||'';if(/^Key[A-Z]$/.test(c))return e.shiftKey?c[3]:c[3].toLowerCase();const m=CODES[c];return m?m[e.shiftKey?1:0]:null}
+const AR={'ض':'q','ص':'w','ث':'e','ق':'r','ف':'t','غ':'y','ع':'u','ه':'i','خ':'o','ح':'p','ج':'[','د':']','ش':'a','س':'s','ي':'d','ب':'f','ل':'g','ا':'h','ت':'j','ن':'k','م':'l','ك':';','ط':"'",'ئ':'z','ء':'x','ؤ':'c','ر':'v','ى':'n','ة':'m','و':',','ز':'.','ظ':'/','،':',','؛':';','؟':'?','٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
+function kbNote(){const e=$('kbn');if(e)e.textContent='\u2328\ufe0f Arabic keyboard detected: your keys are converted to English automatically.'}
+inp.addEventListener('keydown',e=>{const k=e.key||'';if(k.length&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&k!=='Unidentified'&&k.split('').some(ch=>ch.charCodeAt(0)>127)){const m=mapCode(e);if(m){e.preventDefault();kbNote();key(m)}}});
+</script></body></html>
