@@ -100,12 +100,13 @@ select,.f{font:inherit;padding:10px;border-radius:10px;border:1px solid var(--bd
 <div id='shareModal' class='hide share-box'>
   <div class='msg share-panel'>
     <h2 style='margin:0 0 8px'>🔗 Share this game</h2>
-    <p class='sub'>Send the link below or scan the QR code so a friend opens the same language and level.</p>
+    <p class='sub'>Share the game. Your friends start at the menu and can play whenever they want.</p>
     <input id='shareLink' class='share-link' readonly>
     <div class='grid' style='grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin-top:10px'>
       <button id='copyLink' class='pri'>Copy link</button>
       <button id='shareClose'>Close</button>
     </div>
+    <p id='shareStatus' class='hint' role='status' aria-live='polite'></p>
     <div style='display:flex;justify-content:center;margin-top:12px'>
       <img id='shareQr' alt='QR code for share link' style='max-width:220px;width:100%;background:#fff;border-radius:14px;padding:10px;border:1px solid var(--bd)'>
     </div>
@@ -462,26 +463,25 @@ js:`<svg viewBox='0 0 48 48' width='52' height='52'><rect x='5' y='5' width='38'
 for(const k in L){const b=document.createElement("button");b.innerHTML=I[k]+"<span>"+L[k]+"</span>";b.style.cssText="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px";b.onclick=()=>start(k);$("langs").appendChild(b)}
 function showBest(){const C=["All 10","Easy","Medium","Hard"];$("best").innerHTML="<b>🏅 Best scores (WPM)</b><table style='width:100%;border-collapse:collapse;margin-top:6px'><tr><th></th>"+C.map(c=>"<th>"+c+"</th>").join("")+"</tr>"+Object.keys(L).filter(k=>k!=="my"&&k.slice(0,2)!=="o_").map(k=>"<tr><td>"+L[k]+"</td>"+C.map(c=>"<td style='text-align:center'>"+(best[k+"-"+c]||"–")+"</td>").join("")+"</tr>").join("")+"</table>"}
 showBest();
-applySharedGame();
-function getSharePayload(){
-  const view = (!$('s2').classList.contains('hide')) ? 'game' : (!$('s4').classList.contains('hide')) ? 'level' : 'menu';
-  return {lang:S.lang || 'py', level:S.lv || S.lb || 'Easy', view};
-}
 const GAME_URL = 'https://bachirimey-cyber.github.io/fast-programmer-game/';
 function buildShareUrl(){
-  const url = new URL(GAME_URL);
-  url.hash = 'share=' + encodeURIComponent(JSON.stringify(getSharePayload()));
-  return url.toString();
+  return GAME_URL;
 }
 function updateShareLink(){
   const link = buildShareUrl();
   const input = $('shareLink');
   if (input) input.value = link;
   const img = $('shareQr');
-  if (img) img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=' + encodeURIComponent(link);
+  if (img) {
+    img.onerror = () => {
+      $('shareStatus').textContent = 'QR code could not load. You can still copy the game link above.';
+    };
+    img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=' + encodeURIComponent(link);
+  }
 }
 function openShare(){
   updateShareLink();
+  $('shareStatus').textContent = '';
   $('shareModal').classList.remove('hide');
 }
 function closeShare(){
@@ -490,31 +490,18 @@ function closeShare(){
 async function copyShareLink(){
   const input = $('shareLink');
   if (!input) return;
+  const status = $('shareStatus');
   try{
     await navigator.clipboard.writeText(input.value);
-    const old = input.value;
-    input.value = '✅ Link copied';
-    setTimeout(()=>input.value = old, 1200);
+    if (status) status.textContent = '✅ Game link copied. Send it to your friend.';
   }catch(e){
     input.focus();
     input.select();
+    const copied = document.execCommand('copy');
+    if (status) status.textContent = copied
+      ? '✅ Game link copied. Send it to your friend.'
+      : 'Select and copy the link above to share the game.';
   }
-}
-function applySharedGame(){
-  const params = new URLSearchParams(window.location.hash.slice(1));
-  const raw = params.get('share');
-  if (!raw) return;
-  try{
-    const data = JSON.parse(decodeURIComponent(raw));
-    if (!data || !data.lang) return;
-    setTimeout(()=>{
-      const lang = Object.keys(L).includes(data.lang) ? data.lang : Object.keys(L).find(k => L[k] === data.lang) || 'py';
-      start(lang);
-      setTimeout(()=>{
-        if (data.view === 'game' || data.level) play(data.level || 'Easy');
-      }, 80);
-    }, 40);
-  }catch(e){}
 }
 function start(k){S.lang=k;if(window.updMy)updMy();$("lh").textContent=L[k]+" – choose your level";show("s4")}
 function play(l){const o=[...Array(10).keys()].sort((a,b)=>NM.indexOf(LV[a])-NM.indexOf(LV[b])||a-b);Object.assign(S,{lv:l,lb:l==="all"?"All 10":l,list:o.filter(i=>l==="all"||LV[i]===l),i:0,wpm:[],acc:[],res:[],quit:false,lives:3,score:0,combo:0,miss:{},prac:PR});load();show("s2")}
