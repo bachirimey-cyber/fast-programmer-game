@@ -124,7 +124,7 @@ select,.f{font:inherit;padding:10px;border-radius:10px;border:1px solid var(--bd
 
 <section id='o1' class='hide'>
 <h1>🧱 OOP: Object-Oriented Programming</h1>
-<p class='sub'>Choose a language (C is not here because C has no classes). You get one OOP idea at a time: its name, how to write it, and a program that uses it for you to type.</p>
+<p class='sub'>Choose a language for the introductory lessons. The C++ course includes 19 detailed lessons, including C++-specific topics such as pointers, friend functions, RAII and templates. Each lesson explains the idea, shows its syntax and gives you code to type.</p>
 <div class='grid' id='ol'></div>
 <p><button id='ob'>← Back</button></p>
 </section>
@@ -882,7 +882,290 @@ public class Main {
     new Dog().sound();
   }
 }`]],
-js:[['class Name { }  then  const obj = new Name();   (JavaScript needs no main)',`class Dog { // class: a blueprint
+const CPP_EXTRA=[
+['Classes and objects','A class groups data and functions into a reusable type. An object is a real instance of that type, with its own field values.','class Type { fields; methods; };  Type object;',`#include <iostream>
+using namespace std;
+class Dog {
+public:
+  int age = 0;
+  void bark() { cout << "Woof"; }
+};
+int main() {
+  Dog dog;
+  dog.age = 3;
+  dog.bark();
+  return 0;
+}`],
+['Constructors and destructors','A constructor initializes an object when it is created. A destructor runs automatically when its lifetime ends, so it can release resources. Constructors can be overloaded.','Type(params) { ... }  ~Type() { ... }',`#include <iostream>
+using namespace std;
+class Counter {
+public:
+  Counter() { cout << "created"; }
+  ~Counter() { cout << "destroyed"; }
+};
+int main() {
+  Counter item;
+  return 0;
+}`],
+['Encapsulation and data hiding','Keep an object’s state private so outside code cannot put it into an invalid state. Public methods provide a controlled interface for reading or changing it.','private: fields;  public: methods;',`class Account {
+private:
+  int balance = 0;
+public:
+  int getBalance() const { return balance; }
+  void deposit(int amount) {
+    if (amount > 0) balance += amount;
+  }
+};
+int main() {
+  Account account;
+  account.deposit(50);
+  return account.getBalance() == 50 ? 0 : 1;
+}`],
+['Static members','A static data member belongs to the class, not to one object. All objects share the same member. A static method has no this pointer.','static Type member;  Type::member',`class Player {
+public:
+  static int count;
+  Player() { count++; }
+};
+int Player::count = 0;
+int main() {
+  Player a;
+  Player b;
+  return Player::count == 2 ? 0 : 1;
+}`],
+['Inheritance','A derived class can reuse and extend a base class. Public inheritance models an “is-a” relationship; use it when the derived type can stand in for the base type.','class Child : public Parent { ... };',`#include <iostream>
+using namespace std;
+class Animal {
+public:
+  void eat() { cout << "eating"; }
+};
+class Dog : public Animal {
+public:
+  void bark() { cout << "woof"; }
+};
+int main() {
+  Dog dog;
+  dog.eat();
+  dog.bark();
+  return 0;
+}`],
+['Polymorphism','With runtime polymorphism, a virtual method call uses the actual object type, even through a base pointer or reference. Mark the derived method override to catch signature mistakes.','virtual void method();  void method() override;',`#include <iostream>
+using namespace std;
+class Animal {
+public:
+  virtual void sound() { cout << "..."; }
+  virtual ~Animal() = default;
+};
+class Dog : public Animal {
+public:
+  void sound() override { cout << "Woof"; }
+};
+int main() {
+  Dog dog;
+  Animal* pet = &dog;
+  pet->sound();
+  return 0;
+}`],
+['Operator overloading','An operator overload gives a familiar operator a clear meaning for your type. Keep its behavior intuitive; overloading does not change precedence or the number of operands.','ReturnType operator+(const Type& other) const;',`class Point {
+public:
+  int x = 0;
+  int y = 0;
+  Point operator+(const Point& other) const {
+    Point result;
+    result.x = x + other.x;
+    result.y = y + other.y;
+    return result;
+  }
+};
+int main() {
+  Point a, b;
+  a.x = 1;
+  b.x = 2;
+  Point sum = a + b;
+  return sum.x == 3 ? 0 : 1;
+}`],
+['Friend functions and classes','A friend is not a class member, but it is allowed to access private data. Grant friendship only when a close helper genuinely needs that access; friendship is not inherited or reciprocal.','friend ReturnType function(Type&);  friend class Helper;',`class Box {
+private:
+  int value = 0;
+public:
+  friend int readValue(const Box& box);
+  friend class Inspector;
+};
+int readValue(const Box& box) {
+  return box.value;
+}
+class Inspector {
+public:
+  int inspect(const Box& box) const { return box.value; }
+};
+int main() {
+  Box box;
+  Inspector inspector;
+  return readValue(box) + inspector.inspect(box);
+}`],
+['Pointers and OOP','A pointer can refer to an object without copying it. Use -> to access members through a pointer, and use nullptr to represent “no object.” The pointed-to object must stay alive while the pointer is used.','Type* pointer = &object;  pointer->method();',`#include <iostream>
+using namespace std;
+class Dog {
+public:
+  void bark() { cout << "Woof"; }
+};
+int main() {
+  Dog dog;
+  Dog* pointer = &dog;
+  pointer->bark();
+  pointer = nullptr;
+  return 0;
+}`],
+['Advanced polymorphism: abstract classes','A pure virtual method makes a class abstract: it defines an interface but cannot be instantiated directly. Derived classes implement the interface. A virtual destructor makes deletion through a base pointer safe.','virtual ReturnType method() = 0;',`class Shape {
+public:
+  virtual double area() const = 0;
+  virtual ~Shape() = default;
+};
+class Square : public Shape {
+public:
+  double area() const override { return 9.0; }
+};
+int main() {
+  Square square;
+  Shape* shape = &square;
+  return shape->area() == 9.0 ? 0 : 1;
+}`],
+['Casting','Prefer implicit conversions when they are safe. Use static_cast for intentional conversions and dynamic_cast to safely test a downcast in a polymorphic hierarchy. A failed pointer dynamic_cast returns nullptr.','static_cast<T>(value);  dynamic_cast<T*>(pointer);',`#include <iostream>
+using namespace std;
+class Animal {
+public:
+  virtual ~Animal() = default;
+};
+class Dog : public Animal {
+public:
+  void bark() { cout << "Woof"; }
+};
+int main() {
+  Dog dog;
+  Animal* pet = &dog;
+  Dog* castDog = dynamic_cast<Dog*>(pet);
+  if (castDog) castDog->bark();
+  int whole = static_cast<int>(3.7);
+  return whole == 3 ? 0 : 1;
+}`],
+['Composition and aggregation','Composition means an object owns parts whose lifetime is tied to it. Aggregation means it refers to objects owned elsewhere. Prefer composition for “has-a” designs and make ownership clear.','class Whole { Part ownedPart; };  // composition',`#include <iostream>
+using namespace std;
+class Engine {
+public:
+  void start() { cout << "engine on"; }
+};
+class Car {
+private:
+  Engine engine;
+public:
+  void start() { engine.start(); }
+};
+class Driver {};
+class Garage {
+private:
+  Driver* guest;
+public:
+  explicit Garage(Driver* driver) : guest(driver) {}
+};
+int main() {
+  Car car;
+  car.start();
+  Driver driver;
+  Garage garage(&driver);
+  return 0;
+}`],
+['Copying and resource management','A copy should have clear value semantics. If a class directly owns a resource, copying must not accidentally duplicate ownership: define the needed copy/move operations (Rule of 3/5), or prefer standard RAII types (Rule of 0).','Type(const Type& other);  Type(Type&& other);',`class Score {
+private:
+  int value;
+public:
+  explicit Score(int n) : value(n) {}
+  Score(const Score& other) : value(other.value) {}
+  int get() const { return value; }
+};
+int main() {
+  Score first(10);
+  Score second = first;
+  return second.get() == 10 ? 0 : 1;
+}`],
+['Templates and generic programming','A template lets one function or class work with multiple types while retaining compile-time type checking. Generic code expresses an algorithm once instead of duplicating it for each type.','template <typename T>  T function(T value);',`template <typename T>
+T larger(T a, T b) {
+  return a > b ? a : b;
+}
+int main() {
+  int answer = larger(4, 7);
+  return answer == 7 ? 0 : 1;
+}`],
+['Exception handling','Throw an exception when an operation cannot complete normally, and catch it at a layer that can respond. Use specific exception types and let RAII clean up while the stack unwinds.','try { ... } catch (const Exception& error) { ... }',`#include <stdexcept>
+using namespace std;
+int divide(int a, int b) {
+  if (b == 0) throw invalid_argument("zero");
+  return a / b;
+}
+int main() {
+  try {
+    return divide(8, 2) == 4 ? 0 : 1;
+  } catch (const invalid_argument&) {
+    return 1;
+  }
+}`],
+['File handling with classes','A file-owning class should open and close its file safely. Standard stream objects close their files automatically when they leave scope, including during exception unwinding.','ifstream input("file");  ofstream output("file");',`#include <fstream>
+using namespace std;
+class NoteFile {
+public:
+  void save() {
+    ofstream file("note.txt");
+    file << "Hello";
+  }
+};
+int main() {
+  NoteFile note;
+  note.save();
+  return 0;
+}`],
+['SOLID principles','SOLID is five design guidelines: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation and Dependency Inversion. They help keep designs focused and testable; apply them where useful rather than adding classes just to follow a rule.','Give each class one focused responsibility.',`#include <iostream>
+using namespace std;
+class Report {
+public:
+  const char* text() const { return "Sales"; }
+};
+class Printer {
+public:
+  void print(const Report& report) {
+    cout << report.text();
+  }
+};
+int main() {
+  Report report;
+  Printer printer;
+  printer.print(report);
+  return 0;
+}`],
+['RAII: resource acquisition is initialization','RAII ties a resource’s lifetime to an object’s lifetime. Acquire it in a constructor and release it in a destructor. This makes cleanup automatic on normal returns and exceptions.','Constructor acquires; destructor releases.',`#include <memory>
+class Sensor {
+public:
+  int read() const { return 7; }
+};
+int main() {
+  std::unique_ptr<Sensor> sensor(new Sensor());
+  return sensor->read() == 7 ? 0 : 1;
+}`],
+['Design patterns','A design pattern is a reusable way to organize a common design problem, not a library to copy blindly. Strategy lets a caller swap behavior through a shared interface.','Base interface + interchangeable implementations.',`class Strategy {
+public:
+  virtual int value() const = 0;
+  virtual ~Strategy() = default;
+};
+class Fast : public Strategy {
+public:
+  int value() const override { return 1; }
+};
+int main() {
+  Fast strategy;
+  Strategy* choice = &strategy;
+  return choice->value();
+}`]
+];
+OD.cpp=CPP_EXTRA;
+Object.keys(OD).forEach(k=>{L['o_'+k]=L[k]+' OOP';I['o_'+k]=I[k];D['o_'+k]=OD[k].map((x,i)=>k==='cpp'?[x[0],x[3],'Easy',[x[0],x[1],x[2]]]:[CON[i][0],x[1],'Easy',[CON[i][0],CON[i][1]+(k==='c'?' C has no classes, so we imitate it with structs and functions.':''),x[0]]]);
+const b=document.createElement('button');b.innerHTML=I[k]+'<span>'+(k==='cpp'?'C++ · Full 19-lesson course':L[k])+'</span>';b.style.cssText='display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px';b.onclick=()=>{S.lang='o_'+k;playList('Easy',OD[k].map((_,i)=>i),'OOP',true)};$('ol').append(b)});
 }
 const d = new Dog(); // object
 d.age = 3;`],
@@ -932,10 +1215,9 @@ class Dog extends Animal {
   }
 }
 new Dog().sound();`]]};
-Object.keys(OD).forEach(k=>{L['o_'+k]=L[k]+' OOP';I['o_'+k]=I[k];D['o_'+k]=OD[k].map((x,i)=>[CON[i][0],x[1],'Easy',[CON[i][0],CON[i][1]+(k==='c'?' C has no classes, so we imitate it with structs and functions.':''),x[0]]]);
-const b=document.createElement('button');b.innerHTML=I[k]+'<span>'+L[k]+'</span>';b.style.cssText='display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px';b.onclick=()=>{S.lang='o_'+k;playList('Easy',[0,1,2,3,4,5],'OOP',true)};$('ol').append(b)});
+js:[['class Name { }  then  const obj = new Name();   (JavaScript needs no main)',`class Dog { // class: a blueprint
 $('ob').onclick=()=>show('s0');
-{const b=document.createElement('button');b.id='m3';b.style.padding='22px';b.innerHTML='🧱 OOP<br><span class=hint>Learn classes, constructors, inheritance...</span>';b.onclick=()=>show('o1');document.querySelector('#s0 .grid').append(b)}
+{const b=document.createElement('button');b.id='m3';b.style.padding='22px';b.innerHTML='🧱 OOP<br><span class=hint>19 detailed C++ OOP lessons, plus language intros</span>';b.onclick=()=>show('o1');document.querySelector('#s0 .grid').append(b)}
 const MX={
 c:{S:{'Sum 1 to 10':'','Find the max':'int a[] = {3, 9, 2};\nint n = 3;','Bubble sort':'int a[] = {5, 2, 9};\nint n = 3;','Count evens':'int a[] = {1, 2, 3, 4};\nint n = 4;','Swap two values':'int a = 1, b = 2;','Selection sort':'int a[] = {5, 2, 9};\nint n = 3;'},
  F:{'Factorial':'printf("%d", fact(5));','Is prime':'printf("%d", isPrime(7));','GCD':'printf("%d", gcd(12, 18));'},
