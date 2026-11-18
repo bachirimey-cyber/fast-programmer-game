@@ -935,6 +935,7 @@ new Dog().sound();`]]};
 const CPP_EXTRA=[
 ['Classes and objects','A class groups data and functions into a reusable type. An object is a real instance of that type, with its own field values.','class Type { fields; methods; };  Type object;',`#include <iostream>
 using namespace std;
+// A class defines the data and behavior shared by its objects.
 class Dog {
 public:
   int age = 0;
@@ -950,7 +951,9 @@ int main() {
 using namespace std;
 class Counter {
 public:
+  // The constructor runs when an object is created.
   Counter() { cout << "created"; }
+  // The destructor runs automatically when the object leaves scope.
   ~Counter() { cout << "destroyed"; }
 };
 int main() {
@@ -959,8 +962,10 @@ int main() {
 }`],
 ['Encapsulation and data hiding','Keep an object’s state private so outside code cannot put it into an invalid state. Public methods provide a controlled interface for reading or changing it.','private: fields;  public: methods;',`class Account {
 private:
+  // Keep the balance private so it cannot be changed directly.
   int balance = 0;
 public:
+  // Public methods provide controlled access to the data.
   int getBalance() const { return balance; }
   void deposit(int amount) {
     if (amount > 0) balance += amount;
@@ -973,6 +978,7 @@ int main() {
 }`],
 ['Static members','A static data member belongs to the class, not to one object. All objects share the same member. A static method has no this pointer.','static Type member;  Type::member',`class Player {
 public:
+  // All Player objects share this one counter.
   static int count;
   Player() { count++; }
 };
@@ -990,6 +996,7 @@ public:
 };
 class Dog : public Animal {
 public:
+  // Dog inherits Animal's eat() method.
   void bark() { cout << "woof"; }
 };
 int main() {
@@ -1002,6 +1009,7 @@ int main() {
 using namespace std;
 class Animal {
 public:
+  // virtual enables calls to select the actual object's method.
   virtual void sound() { cout << "..."; }
   virtual ~Animal() = default;
 };
@@ -1019,6 +1027,7 @@ int main() {
 public:
   int x = 0;
   int y = 0;
+  // Add matching coordinates and return a new Point.
   Point operator+(const Point& other) const {
     Point result;
     result.x = x + other.x;
@@ -1037,6 +1046,7 @@ int main() {
 private:
   int value = 0;
 public:
+  // These helpers may access Box's private value.
   friend int readValue(const Box& box);
   friend class Inspector;
 };
@@ -1060,6 +1070,7 @@ public:
 };
 int main() {
   Dog dog;
+  // The pointer refers to dog; -> accesses its members.
   Dog* pointer = &dog;
   pointer->bark();
   pointer = nullptr;
@@ -1067,6 +1078,7 @@ int main() {
 }`],
 ['Advanced polymorphism: abstract classes','A pure virtual method makes a class abstract: it defines an interface but cannot be instantiated directly. Derived classes implement the interface. A virtual destructor makes deletion through a base pointer safe.','virtual ReturnType method() = 0;',`class Shape {
 public:
+  // Pure virtual makes Shape an interface, not a concrete object.
   virtual double area() const = 0;
   virtual ~Shape() = default;
 };
@@ -1092,8 +1104,10 @@ public:
 int main() {
   Dog dog;
   Animal* pet = &dog;
+  // Check the actual object type before using Dog-specific behavior.
   Dog* castDog = dynamic_cast<Dog*>(pet);
   if (castDog) castDog->bark();
+  // Convert the floating-point value to an integer explicitly.
   int whole = static_cast<int>(3.7);
   return whole == 3 ? 0 : 1;
 }`],
@@ -1105,6 +1119,7 @@ public:
 };
 class Car {
 private:
+  // Car owns this Engine: this is composition.
   Engine engine;
 public:
   void start() { engine.start(); }
@@ -1112,6 +1127,7 @@ public:
 class Driver {};
 class Garage {
 private:
+  // Garage refers to a Driver owned somewhere else: aggregation.
   Driver* guest;
 public:
   explicit Garage(Driver* driver) : guest(driver) {}
@@ -1128,6 +1144,7 @@ private:
   int value;
 public:
   explicit Score(int n) : value(n) {}
+  // Copy this value into a separate Score object.
   Score(const Score& other) : value(other.value) {}
   int get() const { return value; }
 };
@@ -1136,7 +1153,8 @@ int main() {
   Score second = first;
   return second.get() == 10 ? 0 : 1;
 }`],
-['Templates and generic programming','A template lets one function or class work with multiple types while retaining compile-time type checking. Generic code expresses an algorithm once instead of duplicating it for each type.','template <typename T>  T function(T value);',`template <typename T>
+['Templates and generic programming','A template lets one function or class work with multiple types while retaining compile-time type checking. Generic code expresses an algorithm once instead of duplicating it for each type.','template <typename T>  T function(T value);',`// T is chosen from the arguments when the function is called.
+template <typename T>
 T larger(T a, T b) {
   return a > b ? a : b;
 }
@@ -1147,6 +1165,7 @@ int main() {
 ['Exception handling','Throw an exception when an operation cannot complete normally, and catch it at a layer that can respond. Use specific exception types and let RAII clean up while the stack unwinds.','try { ... } catch (const Exception& error) { ... }',`#include <stdexcept>
 using namespace std;
 int divide(int a, int b) {
+  // Report invalid input with an exception.
   if (b == 0) throw invalid_argument("zero");
   return a / b;
 }
@@ -1162,6 +1181,7 @@ using namespace std;
 class NoteFile {
 public:
   void save() {
+    // The stream closes the file automatically when it leaves scope.
     ofstream file("note.txt");
     file << "Hello";
   }
@@ -1175,6 +1195,7 @@ int main() {
 using namespace std;
 class Report {
 public:
+  // Report stores the data; Printer handles the output.
   const char* text() const { return "Sales"; }
 };
 class Printer {
@@ -1193,6 +1214,7 @@ public:
   int read() const { return 7; }
 };
 int main() {
+  // unique_ptr owns the Sensor and deletes it automatically.
   std::unique_ptr<Sensor> sensor(new Sensor());
   return sensor->read() == 7 ? 0 : 1;
 }`],
@@ -1203,6 +1225,7 @@ public:
 };
 class Fast : public Strategy {
 public:
+  // This implementation supplies one Strategy behavior.
   int value() const override { return 1; }
 };
 int main() {
