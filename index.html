@@ -882,6 +882,56 @@ public class Main {
     new Dog().sound();
   }
 }`]],
+js:[['class Name { }  then  const obj = new Name();   (JavaScript needs no main)',`class Dog { // class: a blueprint
+}
+const d = new Dog(); // object
+d.age = 3;`],
+['constructor(params) { this.field = value; }',`class Dog {
+  constructor(age) { // constructor
+    this.age = age;
+  }
+}
+const d = new Dog(3); // calls the constructor`],
+['methodName(params) { ... }   inside the class (no function keyword)',`class Dog {
+  constructor() {
+    this.age = 0;
+  }
+  birthday() { // method
+    this.age++;
+  }
+}
+const d = new Dog();
+d.birthday(); // call the method`],
+['#field is private; use methods to read or change it',`class Account {
+  #balance = 0; // private: hidden
+  getBalance() { // getter
+    return this.#balance;
+  }
+  deposit(x) { // setter
+    if (x > 0) this.#balance += x;
+  }
+}
+const a = new Account();
+a.deposit(50);`],
+['class Child extends Parent { }',`class Animal { // parent
+  eat() {
+    console.log("eating");
+  }
+}
+class Dog extends Animal { // child inherits
+}
+new Dog().eat();`],
+['same method name in the child (super.method() calls the parent version)',`class Animal {
+  sound() {
+    console.log("...");
+  }
+}
+class Dog extends Animal {
+  sound() { // new version
+    console.log("Woof");
+  }
+}
+new Dog().sound();`]]};
 const CPP_EXTRA=[
 ['Classes and objects','A class groups data and functions into a reusable type. An object is a real instance of that type, with its own field values.','class Type { fields; methods; };  Type object;',`#include <iostream>
 using namespace std;
@@ -1129,9 +1179,7 @@ public:
 };
 class Printer {
 public:
-  void print(const Report& report) {
-    cout << report.text();
-  }
+  void print(const Report& report) { cout << report.text(); }
 };
 int main() {
   Report report;
@@ -1166,56 +1214,6 @@ int main() {
 OD.cpp=CPP_EXTRA;
 Object.keys(OD).forEach(k=>{L['o_'+k]=L[k]+' OOP';I['o_'+k]=I[k];D['o_'+k]=OD[k].map((x,i)=>k==='cpp'?[x[0],x[3],'Easy',[x[0],x[1],x[2]]]:[CON[i][0],x[1],'Easy',[CON[i][0],CON[i][1]+(k==='c'?' C has no classes, so we imitate it with structs and functions.':''),x[0]]]);
 const b=document.createElement('button');b.innerHTML=I[k]+'<span>'+(k==='cpp'?'C++ · Full 19-lesson course':L[k])+'</span>';b.style.cssText='display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px';b.onclick=()=>{S.lang='o_'+k;playList('Easy',OD[k].map((_,i)=>i),'OOP',true)};$('ol').append(b)});
-}
-const d = new Dog(); // object
-d.age = 3;`],
-['constructor(params) { this.field = value; }',`class Dog {
-  constructor(age) { // constructor
-    this.age = age;
-  }
-}
-const d = new Dog(3); // calls the constructor`],
-['methodName(params) { ... }   inside the class (no function keyword)',`class Dog {
-  constructor() {
-    this.age = 0;
-  }
-  birthday() { // method
-    this.age++;
-  }
-}
-const d = new Dog();
-d.birthday(); // call the method`],
-['#field is private; use methods to read or change it',`class Account {
-  #balance = 0; // private: hidden
-  getBalance() { // getter
-    return this.#balance;
-  }
-  deposit(x) { // setter
-    if (x > 0) this.#balance += x;
-  }
-}
-const a = new Account();
-a.deposit(50);`],
-['class Child extends Parent { }',`class Animal { // parent
-  eat() {
-    console.log("eating");
-  }
-}
-class Dog extends Animal { // child inherits
-}
-new Dog().eat();`],
-['same method name in the child (super.method() calls the parent version)',`class Animal {
-  sound() {
-    console.log("...");
-  }
-}
-class Dog extends Animal {
-  sound() { // new version
-    console.log("Woof");
-  }
-}
-new Dog().sound();`]]};
-js:[['class Name { }  then  const obj = new Name();   (JavaScript needs no main)',`class Dog { // class: a blueprint
 $('ob').onclick=()=>show('s0');
 {const b=document.createElement('button');b.id='m3';b.style.padding='22px';b.innerHTML='🧱 OOP<br><span class=hint>19 detailed C++ OOP lessons, plus language intros</span>';b.onclick=()=>show('o1');document.querySelector('#s0 .grid').append(b)}
 const MX={
