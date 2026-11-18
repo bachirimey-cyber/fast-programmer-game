@@ -124,7 +124,7 @@ select,.f{font:inherit;padding:10px;border-radius:10px;border:1px solid var(--bd
 
 <section id='o1' class='hide'>
 <h1>🧱 OOP: Object-Oriented Programming</h1>
-<p class='sub'>Choose a language for the introductory lessons. The C++ course includes 19 detailed lessons, including C++-specific topics such as pointers, friend functions, RAII and templates. Each lesson explains the idea, shows its syntax and gives you code to type.</p>
+<p class='sub'>Choose C++, Python, Java or JavaScript for a 19-lesson OOP course. Each lesson explains the idea, shows language-specific syntax and gives you commented code to type. Features that a language does not support directly include an explanation of the closest equivalent.</p>
 <div class='grid' id='ol'></div>
 <p><button id='ob'>← Back</button></p>
 </section>
@@ -1235,10 +1235,751 @@ int main() {
 }`]
 ];
 OD.cpp=CPP_EXTRA;
-Object.keys(OD).forEach(k=>{L['o_'+k]=L[k]+' OOP';I['o_'+k]=I[k];D['o_'+k]=OD[k].map((x,i)=>k==='cpp'?[x[0],x[3],'Easy',[x[0],x[1],x[2]]]:[CON[i][0],x[1],'Easy',[CON[i][0],CON[i][1]+(k==='c'?' C has no classes, so we imitate it with structs and functions.':''),x[0]]]);
-const b=document.createElement('button');b.innerHTML=I[k]+'<span>'+(k==='cpp'?'C++ · Full 19-lesson course':L[k])+'</span>';b.style.cssText='display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px';b.onclick=()=>{S.lang='o_'+k;playList('Easy',OD[k].map((_,i)=>i),'OOP',true)};$('ol').append(b)});
+const PY_EXTRA=[
+['Classes and objects','A class describes a kind of object; each instance stores its own attributes and can use the class methods. Python creates an instance by calling the class.','class Type: ...  object = Type()',`class Dog:
+    # Methods describe what each Dog can do.
+    def bark(self):
+        print("Woof")
+
+dog = Dog()  # Create an object.
+dog.age = 3  # Instances can hold their own attributes.
+dog.bark()`],
+['Constructors and destructors','__init__ initializes a new instance. Python has __del__, but when it runs is not guaranteed; use context managers for reliable cleanup instead.','def __init__(self, value): ...  def __del__(self): ...',`class Counter:
+    def __init__(self):
+        # Initialize the instance when it is created.
+        self.value = 0
+
+    def __del__(self):
+        # This hook is not a reliable cleanup mechanism.
+        print("object collected")
+
+item = Counter()
+print(item.value)`],
+['Encapsulation and data hiding','A leading underscore marks an internal attribute by convention. Double underscores trigger name mangling, but Python does not provide strict private access control; use methods and properties to protect invariants.','self._internal  @property  def value(self): ...',`class Account:
+    def __init__(self):
+        self.__balance = 0  # Name-mangled, not truly private.
+
+    @property
+    def balance(self):
+        # Expose a read-only view of the balance.
+        return self.__balance
+
+    def deposit(self, amount):
+        if amount > 0:
+            self.__balance += amount
+
+account = Account()
+account.deposit(50)
+print(account.balance)`],
+['Static members','A class attribute is shared by instances unless an instance shadows it. Use @classmethod for class-aware methods and @staticmethod for helpers that need no instance or class state.','class count: ...  @classmethod  @staticmethod',`class Player:
+    count = 0  # Shared class attribute.
+
+    def __init__(self):
+        Player.count += 1
+
+    @staticmethod
+    def game_name():
+        # This helper needs no Player instance.
+        return "Fast Programmer"
+
+first = Player()
+second = Player()
+print(Player.count, Player.game_name())`],
+['Inheritance','A subclass can extend a base class and call its implementation with super(). Prefer inheritance for a true “is-a” relationship; otherwise composition may be simpler.','class Child(Parent):  ...  super().method()',`class Animal:
+    def eat(self):
+        print("eating")
+
+class Dog(Animal):
+    def bark(self):
+        # Dog inherits Animal.eat.
+        super().eat()
+        print("Woof")
+
+Dog().bark()`],
+['Polymorphism','Python uses dynamic dispatch: calling a method on a base-typed reference invokes the method belonging to the actual object. No virtual keyword is needed.','object.method()  # resolved using the actual object',`class Animal:
+    def sound(self):
+        print("...")
+
+class Dog(Animal):
+    def sound(self):
+        # Override the same method for Dog objects.
+        print("Woof")
+
+pet = Dog()
+pet.sound()`],
+['Operator overloading','Special methods such as __add__ let your class participate in built-in operators. Keep the meaning intuitive and return a useful result.','def __add__(self, other): ...',`class Point:
+    def __init__(self, x):
+        self.x = x
+
+    def __add__(self, other):
+        # Define what adding two Points means.
+        return Point(self.x + other.x)
+
+total = Point(2) + Point(3)
+print(total.x)`],
+['Friend functions and classes','Python has no friend declaration. Its privacy model relies on conventions, properties and explicit methods. Give trusted helpers a narrow public method instead of bypassing encapsulation.','No friend keyword; expose a deliberate method.',`class Box:
+    def __init__(self):
+        self.__value = 7
+
+    def read_value(self):
+        # Provide a deliberate, narrow access method.
+        return self.__value
+
+def show_box(box):
+    # The helper uses the public interface.
+    print(box.read_value())
+
+show_box(Box())`],
+['Pointers and OOP','Python does not expose raw pointers or pointer arithmetic. Variables refer to objects; assigning a mutable object to another variable creates another reference to that same object.','alias = object  # another reference to the same object',`class Dog:
+    def bark(self):
+        print("Woof")
+
+dog = Dog()
+alias = dog  # Both names refer to one object.
+alias.bark()
+print(dog is alias)`],
+['Advanced polymorphism: abstract classes','The abc module provides abstract base classes and required methods. A class with unimplemented abstract methods cannot be instantiated.','class Base(ABC):  @abstractmethod  def method(self): ...',`from abc import ABC, abstractmethod
+
+class Shape(ABC):
+    @abstractmethod
+    def area(self):
+        # Subclasses must provide this method.
+        pass
+
+class Square(Shape):
+    def area(self):
+        return 9
+
+print(Square().area())`],
+['Casting','Python is dynamically typed rather than based on C++-style casts. Use constructors such as int() for conversions and isinstance() to check a value’s type before using it.','int(value)  isinstance(value, Type)',`class Animal:
+    pass
+
+class Dog(Animal):
+    def bark(self):
+        print("Woof")
+
+pet = Dog()
+if isinstance(pet, Dog):
+    # Check the type before using Dog-specific behavior.
+    pet.bark()
+whole = int(3.7)  # Convert the number explicitly.
+print(whole)`],
+['Composition and aggregation','Composition stores a part owned by the containing object. Aggregation keeps a reference to an object managed elsewhere. Python references do not by themselves define ownership.','self.part = Part()  # composition; pass an existing object for aggregation',`class Engine:
+    def start(self):
+        print("engine on")
+
+class Car:
+    def __init__(self):
+        # Car creates and owns its Engine (composition).
+        self.engine = Engine()
+
+    def start(self):
+        self.engine.start()
+
+class Driver:
+    pass
+
+class Team:
+    def __init__(self, leader):
+        # Team refers to a Driver it does not own (aggregation).
+        self.leader = leader
+
+car = Car()
+car.start()
+team = Team(Driver())`],
+['Copying and resource management','Assignment creates another reference; it does not copy an object. copy.copy makes a shallow copy and copy.deepcopy recursively copies nested data. Be careful copying objects that own external resources.','copy.copy(object)  copy.deepcopy(object)',`import copy
+
+class Score:
+    def __init__(self, value):
+        self.value = value
+
+first = Score(10)
+second = copy.copy(first)  # Make a separate shallow copy.
+second.value = 20
+print(first.value, second.value)`],
+['Templates and generic programming','Python uses duck typing and type annotations rather than C++ templates. TypeVar and Generic describe reusable, type-checked functions and classes for static-analysis tools.','T = TypeVar("T")  def first(values: Sequence[T]) -> T:',`from typing import Sequence, TypeVar
+
+T = TypeVar("T")
+
+def first(values: Sequence[T]) -> T:
+    # The same function works for different element types.
+    return values[0]
+
+print(first([4, 7]))`],
+['Exception handling','Raise exceptions for errors and catch only the types you can handle. A finally block runs during cleanup; context managers are usually better for closing resources.','try: ... except Error: ... finally: ...',`def divide(a, b):
+    if b == 0:
+        # Report invalid input with a specific exception.
+        raise ValueError("zero")
+    return a / b
+
+try:
+    print(divide(8, 2))
+except ValueError as error:
+    print(error)`],
+['File handling with classes','A class can own file operations, but the with statement should manage the file lifetime. It closes the file automatically, even if an exception occurs.','with open(path) as file: ...',`class NoteFile:
+    def save(self):
+        # The with block closes the file automatically.
+        with open("note.txt", "w") as file:
+            file.write("Hello")
+
+NoteFile().save()`],
+['SOLID principles','SOLID is Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation and Dependency Inversion. These are design guidelines for focused, replaceable components, not rules to add unnecessary classes.','Give each class one focused responsibility.',`class Report:
+    def text(self):
+        # Report is responsible for report data.
+        return "Sales"
+
+class Printer:
+    def print_report(self, report):
+        # Printing is a separate responsibility.
+        print(report.text())
+
+Printer().print_report(Report())`],
+['RAII and deterministic cleanup','Python has no deterministic destructor equivalent to C++ RAII. Use a context manager (with) to acquire and release a resource at a predictable boundary.','with resource: ...  __enter__  __exit__',`class Session:
+    def __enter__(self):
+        print("open")
+        return self
+
+    def __exit__(self, kind, value, trace):
+        # Always release the resource at block exit.
+        print("close")
+
+with Session():
+    print("work")`],
+['Design patterns','A design pattern is a reusable design idea, not code to copy blindly. Strategy lets a caller supply interchangeable behavior, often as a function or object.','Accept a callable or strategy object as a dependency.',`class Checkout:
+    def __init__(self, discount):
+        # Inject the pricing strategy.
+        self.discount = discount
+
+    def total(self, price):
+        return self.discount(price)
+
+checkout = Checkout(lambda price: price - 1)
+print(checkout.total(10))`]
+];
+OD.py=PY_EXTRA;
+const JAVA_EXTRA=[
+['Classes and objects','A class defines fields and methods; an object is an instance created with new. Each object has its own instance fields.','class Type { fields; methods; }  Type object = new Type();',`class Dog {
+  int age;
+  void bark() {
+    System.out.println("Woof");
+  }
+}
+class Main {
+  public static void main(String[] args) {
+    Dog dog = new Dog(); // Create an object.
+    dog.age = 3;
+    dog.bark();
+  }
+}`],
+['Constructors and destructors','A constructor initializes a new object. Java has no deterministic destructor: garbage collection reclaims memory later. Use AutoCloseable and try-with-resources for files and other resources.','Type(params) { ... }  implements AutoCloseable',`class Counter implements AutoCloseable {
+  Counter() {
+    System.out.println("created"); // Constructor.
+  }
+  public void close() {
+    // Explicit resource cleanup, not a destructor.
+    System.out.println("closed");
+  }
+}
+class Main {
+  public static void main(String[] args) {
+    try (Counter item = new Counter()) {
+      System.out.println("work");
+    }
+  }
+}`],
+['Encapsulation and data hiding','Make fields private to prevent direct outside changes. Public methods validate changes and preserve the object’s invariants.','private Type field;  public Type getField()',`class Account {
+  private int balance = 0; // Hidden state.
+  public int getBalance() {
+    return balance;
+  }
+  public void deposit(int amount) {
+    // Accept only valid deposits.
+    if (amount > 0) balance += amount;
+  }
+}
+class Main {
+  public static void main(String[] args) {
+    Account account = new Account();
+    account.deposit(50);
+    System.out.println(account.getBalance());
+  }
+}`],
+['Static members','A static field belongs to the class and is shared by all instances. A static method can use static members but has no particular object’s this.','static Type member;  Type.method()',`class Player {
+  static int count = 0; // Shared by all Players.
+  Player() {
+    count++;
+  }
+}
+class Main {
+  public static void main(String[] args) {
+    new Player();
+    new Player();
+    System.out.println(Player.count);
+  }
+}`],
+['Inheritance','A subclass can extend one superclass and reuse or specialize its behavior. Use inheritance for a true “is-a” relationship, and call super when the parent behavior is needed.','class Child extends Parent { ... }',`class Animal {
+  void eat() {
+    System.out.println("eating");
+  }
+}
+class Dog extends Animal {
+  void bark() {
+    // Dog inherits Animal.eat().
+    super.eat();
+    System.out.println("Woof");
+  }
+}
+class Main {
+  public static void main(String[] args) {
+    new Dog().bark();
+  }
+}`],
+['Polymorphism','A superclass or interface reference can refer to a subclass object. Overridden instance methods are selected at runtime based on the actual object.','@Override  ReturnType method()',`class Animal {
+  void sound() {
+    System.out.println("...");
+  }
+}
+class Dog extends Animal {
+  @Override
+  void sound() {
+    // Runtime dispatch selects this version.
+    System.out.println("Woof");
+  }
+}
+class Main {
+  public static void main(String[] args) {
+    Animal pet = new Dog();
+    pet.sound();
+  }
+}`],
+['Operator overloading','Java does not let classes define custom operator behavior. Keep the intent clear with a named method such as plus or compareTo; built-in + still works for numbers and strings.','Type plus(Type other)  // method instead of operator+',`class Point {
+  final int x;
+  Point(int x) { this.x = x; }
+  Point plus(Point other) {
+    // Use a named method because Java has no operator overloads.
+    return new Point(x + other.x);
+  }
+}
+class Main {
+  public static void main(String[] args) {
+    Point total = new Point(2).plus(new Point(3));
+    System.out.println(total.x);
+  }
+}`],
+['Friend functions and classes','Java has no friend keyword. Keep fields private and expose a narrow method, or use package-private access when classes in the same package are trusted collaborators.','No friend keyword; use private fields and a deliberate API.',`class Box {
+  private int value = 7;
+  int readValue() {
+    // A package collaborator uses the class API.
+    return value;
+  }
+}
+class Main {
+  public static void main(String[] args) {
+    Box box = new Box();
+    System.out.println(box.readValue());
+  }
+}`],
+['Pointers and OOP','Java references point to objects conceptually, but raw pointers, pointer arithmetic and manual memory deletion are not exposed. Multiple variables may refer to the same object.','Type reference = object;  reference.method()',`class Dog {
+  void bark() {
+    System.out.println("Woof");
+  }
+}
+class Main {
+  public static void main(String[] args) {
+    Dog dog = new Dog();
+    Dog alias = dog; // Both references name the same object.
+    alias.bark();
+    System.out.println(dog == alias);
+  }
+}`],
+['Advanced polymorphism: abstract classes','An abstract class can share state and implemented methods while requiring subclasses to implement abstract methods. Interfaces are another way to define polymorphic contracts.','abstract class Type  abstract ReturnType method();',`abstract class Shape {
+  abstract double area();
+}
+class Square extends Shape {
+  @Override
+  double area() {
+    // Implement the abstract contract.
+    return 9.0;
+  }
+}
+class Main {
+  public static void main(String[] args) {
+    Shape shape = new Square();
+    System.out.println(shape.area());
+  }
+}`],
+['Casting','Use instanceof to check an object’s type before downcasting. Java also supports explicit primitive conversions, which may lose information.','value instanceof Type  Type item = (Type) value;',`class Animal {}
+class Dog extends Animal {
+  void bark() {
+    System.out.println("Woof");
+  }
+}
+class Main {
+  public static void main(String[] args) {
+    Animal pet = new Dog();
+    if (pet instanceof Dog) {
+      // Check the type before casting.
+      Dog dog = (Dog) pet;
+      dog.bark();
+    }
+    int whole = (int) 3.7; // Explicit narrowing conversion.
+    System.out.println(whole);
+  }
+}`],
+['Composition and aggregation','Composition means a class creates and owns its parts. Aggregation means it keeps a reference to an object managed elsewhere. Java references alone do not enforce ownership.','private Part part = new Part();  // composition',`class Engine {
+  void start() {
+    System.out.println("engine on");
+  }
+}
+class Car {
+  private final Engine engine = new Engine(); // Owned part.
+  void start() {
+    engine.start();
+  }
+}
+class Driver {}
+class Garage {
+  private final Driver guest; // Reference to an external object.
+  Garage(Driver driver) {
+    guest = driver;
+  }
+}
+class Main {
+  public static void main(String[] args) {
+    new Car().start();
+    Driver driver = new Driver();
+    new Garage(driver);
+  }
+}`],
+['Copying and resource management','Assignment copies an object reference, not the object. Use a copy constructor or a deliberate copy method for value copies. Use try-with-resources for resources that must close.','Type(Type other)  // copy constructor',`class Score {
+  private final int value;
+  Score(int value) { this.value = value; }
+  Score(Score other) {
+    // Copy the value, not the reference.
+    this.value = other.value;
+  }
+  int get() { return value; }
+}
+class Main {
+  public static void main(String[] args) {
+    Score first = new Score(10);
+    Score second = new Score(first);
+    System.out.println(second.get());
+  }
+}`],
+['Templates and generic programming','Java generics let classes and methods work with different reference types while preserving compile-time type checks. Generic type information is mostly erased at runtime.','class Box<T>  T method(T value)',`class Box<T> {
+  private final T value;
+  Box(T value) { this.value = value; }
+  T get() { return value; }
+}
+class Main {
+  public static void main(String[] args) {
+    Box<String> box = new Box<>("hello");
+    // The compiler checks the String type.
+    System.out.println(box.get());
+  }
+}`],
+['Exception handling','Checked exceptions must be caught or declared; unchecked exceptions signal programming or runtime errors. Catch only errors you can handle and close resources with try-with-resources.','try { ... } catch (Type error) { ... }',`class Main {
+  static int divide(int a, int b) {
+    if (b == 0) {
+      // Report invalid input with an exception.
+      throw new IllegalArgumentException("zero");
+    }
+    return a / b;
+  }
+  public static void main(String[] args) {
+    try {
+      System.out.println(divide(8, 2));
+    } catch (IllegalArgumentException error) {
+      System.out.println(error.getMessage());
+    }
+  }
+}`],
+['File handling with classes','A file service class can keep file-related behavior together. Use try-with-resources so streams close automatically, and handle or declare IOException.','try (BufferedWriter writer = Files.newBufferedWriter(path))',`import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+class NoteFile {
+  void save() throws IOException {
+    // try-with-resources closes the writer automatically.
+    try (BufferedWriter writer = Files.newBufferedWriter(java.nio.file.Paths.get("note.txt"))) {
+      writer.write("Hello");
+    }
+  }
+}
+class Main {
+  public static void main(String[] args) throws IOException {
+    new NoteFile().save();
+  }
+}`],
+['SOLID principles','SOLID is Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation and Dependency Inversion. These guidelines support focused, testable designs; use judgment rather than adding needless abstractions.','Give each class one focused responsibility.',`class Report {
+  String text() {
+    // Report provides report data.
+    return "Sales";
+  }
+}
+class Printer {
+  void print(Report report) {
+    // Printing is a separate responsibility.
+    System.out.println(report.text());
+  }
+}
+class Main {
+  public static void main(String[] args) {
+    new Printer().print(new Report());
+  }
+}`],
+['RAII and deterministic cleanup','Java has no C++ destructors or deterministic object destruction. AutoCloseable with try-with-resources is the idiomatic way to release resources at a predictable point.','try (Resource resource = new Resource()) { ... }',`class Session implements AutoCloseable {
+  public void close() {
+    // Close is called automatically at block exit.
+    System.out.println("closed");
+  }
+}
+class Main {
+  public static void main(String[] args) {
+    try (Session session = new Session()) {
+      System.out.println("work");
+    }
+  }
+}`],
+['Design patterns','A design pattern describes a reusable design solution. Strategy lets a caller swap behavior by depending on an interface instead of a concrete implementation.','interface Strategy { ReturnType method(); }',`interface Strategy {
+  int value();
+}
+class Fast implements Strategy {
+  public int value() {
+    // This class supplies one interchangeable strategy.
+    return 1;
+  }
+}
+class Main {
+  public static void main(String[] args) {
+    Strategy choice = new Fast();
+    System.out.println(choice.value());
+  }
+}`]
+];
+OD.java=JAVA_EXTRA;
+const JS_EXTRA=[
+['Classes and objects','A class describes the shape and behavior of objects. Use new to create an instance; each instance has its own fields.','class Type { ... }  const object = new Type();',`class Dog {
+  bark() {
+    console.log("Woof");
+  }
+}
+const dog = new Dog(); // Create an object.
+dog.age = 3;
+dog.bark();`],
+['Constructors and destructors','The constructor initializes an instance. JavaScript has no deterministic destructor; garbage collection timing is not predictable. Use an explicit close or dispose method when cleanup is needed.','constructor(value) { ... }  dispose() { ... }',`class Counter {
+  constructor() {
+    this.value = 0; // Initialize the object.
+  }
+  dispose() {
+    // Call explicitly; this is not an automatic destructor.
+    console.log("release resources");
+  }
+}
+const item = new Counter();
+item.dispose();`],
+['Encapsulation and data hiding','Private fields written with # can be accessed only inside the class. Public methods can validate changes and protect the object’s state.','#field  get value() { ... }  set value(x) { ... }',`class Account {
+  #balance = 0; // Private state.
+  get balance() {
+    return this.#balance;
+  }
+  deposit(amount) {
+    // Change the balance only through a safe method.
+    if (amount > 0) this.#balance += amount;
+  }
+}
+const account = new Account();
+account.deposit(50);
+console.log(account.balance);`],
+['Static members','Static fields and methods belong to the class itself, not to an instance. Access them with the class name.','static count = 0;  static method() { ... }',`class Player {
+  static count = 0; // Shared by all Player objects.
+  constructor() {
+    Player.count++;
+  }
+}
+new Player();
+new Player();
+console.log(Player.count);`],
+['Inheritance','A subclass can extend one base class and reuse its behavior. Call super() before using this in a derived constructor. Prefer inheritance for a true “is-a” relationship.','class Child extends Parent { ... }  super()',`class Animal {
+  eat() {
+    console.log("eating");
+  }
+}
+class Dog extends Animal {
+  bark() {
+    // Dog inherits Animal.eat().
+    super.eat();
+    console.log("Woof");
+  }
+}
+new Dog().bark();`],
+['Polymorphism','JavaScript uses dynamic dispatch: the method that runs depends on the actual object, even when objects are used through the same interface.','object.method()  // resolved at runtime',`class Animal {
+  sound() {
+    console.log("...");
+  }
+}
+class Dog extends Animal {
+  sound() {
+    // Override the method for Dog objects.
+    console.log("Woof");
+  }
+}
+const pet = new Dog();
+pet.sound();`],
+['Operator overloading','JavaScript does not support custom operator overloading. Use a named method such as plus so the operation is clear and works consistently.','plus(other) { ... }  // instead of a custom + operator',`class Point {
+  constructor(x) {
+    this.x = x;
+  }
+  plus(other) {
+    // Use a named method for custom addition.
+    return new Point(this.x + other.x);
+  }
+}
+const total = new Point(2).plus(new Point(3));
+console.log(total.x);`],
+['Friend functions and classes','JavaScript has no friend feature. A #private field is intentionally inaccessible outside its class, so expose a narrow public method when another object needs data.','No friend keyword; use a public method.',`class Box {
+  #value = 7;
+  readValue() {
+    // Share only the value intended for callers.
+    return this.#value;
+  }
+}
+function showBox(box) {
+  console.log(box.readValue());
+}
+showBox(new Box());`],
+['Pointers and OOP','JavaScript has no raw pointers or pointer arithmetic. Object variables hold references; assigning one to another refers to the same object rather than making a copy.','const alias = object;  alias.method()',`class Dog {
+  bark() {
+    console.log("Woof");
+  }
+}
+const dog = new Dog();
+const alias = dog; // Both names refer to one object.
+alias.bark();
+console.log(dog === alias);`],
+['Advanced polymorphism: abstract classes','JavaScript has no built-in abstract-class keyword. A base class can define a method that throws, requiring subclasses to provide a concrete implementation.','method() { throw new Error("Implement in subclass"); }',`class Shape {
+  area() {
+    throw new Error("Implement area");
+  }
+}
+class Square extends Shape {
+  area() {
+    // Supply the required concrete behavior.
+    return 9;
+  }
+}
+console.log(new Square().area());`],
+['Casting','JavaScript is dynamically typed. Use Number, String and other built-in functions for conversions, and instanceof to check an object’s prototype chain before using subclass behavior.','Number(value)  object instanceof Type',`class Animal {}
+class Dog extends Animal {
+  bark() {
+    console.log("Woof");
+  }
+}
+const pet = new Dog();
+if (pet instanceof Dog) {
+  // Verify the object type before using Dog behavior.
+  pet.bark();
+}
+const whole = Number("3"); // Convert a value explicitly.
+console.log(whole);`],
+['Composition and aggregation','Composition creates a part as owned state inside another object. Aggregation receives a reference to an object managed elsewhere. JavaScript does not enforce ownership automatically.','this.part = new Part();  // composition',`class Engine {
+  start() {
+    console.log("engine on");
+  }
+}
+class Car {
+  constructor() {
+    this.engine = new Engine(); // Owned part.
+  }
+  start() {
+    this.engine.start();
+  }
+}
+class Driver {}
+class Team {
+  constructor(leader) {
+    // Team refers to a Driver it does not own (aggregation).
+    this.leader = leader;
+  }
+}
+new Car().start();
+new Team(new Driver());`],
+['Copying and resource management','Assigning an object copies its reference, not its contents. Object spread makes a shallow copy; nested objects remain shared. structuredClone can copy many data-only values, but not every object or resource.','const copy = { ...object };  structuredClone(value)',`const first = { score: 10 };
+const second = { ...first }; // Make a shallow copy.
+second.score = 20;
+console.log(first.score, second.score);`],
+['Templates and generic programming','JavaScript has no built-in generic type parameters. Reusable functions work with values dynamically; TypeScript adds compile-time generics for typed code.','function first(values) { ... }  // JS; function first<T>(...): T in TS',`function first(values) {
+  // This works with arrays of many value types.
+  return values[0];
+}
+console.log(first([4, 7]));`],
+['Exception handling','Throw an Error for failures and catch only errors you can handle. finally runs whether the operation succeeds or throws, making it useful for cleanup.','try { ... } catch (error) { ... } finally { ... }',`function divide(a, b) {
+  if (b === 0) {
+    // Report invalid input with an Error.
+    throw new Error("zero");
+  }
+  return a / b;
+}
+try {
+  console.log(divide(8, 2));
+} catch (error) {
+  console.log(error.message);
+}`],
+['File handling with classes','In a browser, a class can prepare a file for download with Blob and an object URL. Reading user-selected files requires an input or picker and the user’s permission.','new Blob([text]);  URL.createObjectURL(blob)',`class NoteFile {
+  save() {
+    // Create a browser-downloadable file.
+    const blob = new Blob(["Hello"], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "note.txt";
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+}
+new NoteFile().save();`],
+['SOLID principles','SOLID is Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation and Dependency Inversion. They are guidelines for focused, replaceable components; do not add abstractions without a reason.','Give each class one focused responsibility.',`class Report {
+  text() {
+    // Report provides the report data.
+    return "Sales";
+  }
+}
+class Printer {
+  print(report) {
+    // Printing is a separate responsibility.
+    console.log(report.text());
+  }
+}
+new Printer().print(new Report());`],
+['RAII and deterministic cleanup','JavaScript has no deterministic destructor. Use try/finally or an API’s explicit close/dispose method to release resources at a predictable point.','try { ... } finally { resource.close(); }',`class Session {
+  close() {
+    console.log("closed");
+  }
+}
+const session = new Session();
+try {
+  console.log("work");
+} finally {
+  // Always release the resource at block exit.
+  session.close();
+}`],
+['Design patterns','A design pattern is a reusable design idea, not code to copy blindly. Strategy lets a caller inject interchangeable behavior as a function or object.','Accept a function or strategy object as a dependency.',`class Checkout {
+  constructor(discount) {
+    // Inject the pricing strategy.
+    this.discount = discount;
+  }
+  total(price) {
+    return this.discount(price);
+  }
+}
+const checkout = new Checkout(price => price - 1);
+console.log(checkout.total(10));`]
+];
+OD.js=JS_EXTRA;
+Object.keys(OD).forEach(k=>{L['o_'+k]=L[k]+' OOP';I['o_'+k]=I[k];D['o_'+k]=OD[k].map((x,i)=>x.length===4?[x[0],x[3],'Easy',[x[0],x[1],x[2]]]:[CON[i][0],x[1],'Easy',[CON[i][0],CON[i][1]+(k==='c'?' C has no classes, so we imitate it with structs and functions.':''),x[0]]]);
+const b=document.createElement('button');b.innerHTML=I[k]+'<span>'+L[k]+' · Full 19-lesson course</span>';b.style.cssText='display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px';b.onclick=()=>{S.lang='o_'+k;playList('Easy',OD[k].map((_,i)=>i),'OOP',true)};$('ol').append(b)});
 $('ob').onclick=()=>show('s0');
-{const b=document.createElement('button');b.id='m3';b.style.padding='22px';b.innerHTML='🧱 OOP<br><span class=hint>19 detailed C++ OOP lessons, plus language intros</span>';b.onclick=()=>show('o1');document.querySelector('#s0 .grid').append(b)}
+{const b=document.createElement('button');b.id='m3';b.style.padding='22px';b.innerHTML='🧱 OOP<br><span class=hint>19 detailed lessons in C++, Python, Java and JavaScript</span>';b.onclick=()=>show('o1');document.querySelector('#s0 .grid').append(b)}
 const MX={
 c:{S:{'Sum 1 to 10':'','Find the max':'int a[] = {3, 9, 2};\nint n = 3;','Bubble sort':'int a[] = {5, 2, 9};\nint n = 3;','Count evens':'int a[] = {1, 2, 3, 4};\nint n = 4;','Swap two values':'int a = 1, b = 2;','Selection sort':'int a[] = {5, 2, 9};\nint n = 3;'},
  F:{'Factorial':'printf("%d", fact(5));','Is prime':'printf("%d", isPrime(7));','GCD':'printf("%d", gcd(12, 18));'},
