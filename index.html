@@ -21,6 +21,20 @@ button:hover{border-color:var(--ac)}
 .prog i{display:block;height:100%;background:var(--ac);width:0}
 #code{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;font:18px/1.7 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-x:auto;min-height:140px}
 .d{color:var(--ok)}.c{background:var(--ac);color:#fff;border-radius:3px}.n{color:var(--mu)}
+#lessonLayout{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
+#lessonLayout.visual-active{grid-template-columns:minmax(0,1.1fr) minmax(270px,.9fr)}
+#visualizer{min-width:0;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px}
+#visualizer.hide{display:none}
+#visualCode{max-height:230px;overflow:auto;background:var(--bg);border-radius:8px;padding:8px;font:12px/1.55 ui-monospace,Menlo,Consolas,monospace;white-space:pre}
+.vline{display:block;padding:0 4px;color:var(--mu)}
+.vline.active{background:var(--ac);color:#fff;border-radius:4px}
+.memory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:7px;margin:9px 0}
+.memory-cell{min-width:0;border:1px solid var(--bd);border-radius:8px;padding:7px;background:var(--bg);overflow-wrap:anywhere}
+.memory-cell b{display:block;font:600 11px/1.3 system-ui;color:var(--mu);margin-bottom:3px}
+.memory-cell span{font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
+.visual-controls{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.visual-controls button{padding:7px 10px}
+@media(max-width:700px){#lessonLayout.visual-active{grid-template-columns:minmax(0,1fr)}}
 .shake{animation:s .15s}@keyframes s{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .hint{color:var(--mu);font-size:14px;margin-top:10px}
 .big{font-size:34px;font-weight:700}
@@ -154,7 +168,26 @@ select,.f{font:inherit;padding:10px;border-radius:10px;border:1px solid var(--bd
 <div class="bar" style="margin:0 0 4px"><span id="tmt"></span></div><div class="prog"><i id="tm" style="width:100%"></i></div>
 <div id='les' class='msg hide' style='font-weight:400;font-size:15px'></div>
 <h3 id="ti" style="margin:0 0 8px"></h3>
-<div id="code" tabindex="0"></div>
+<div id="lessonLayout">
+  <div>
+    <div id="code" tabindex="0"></div>
+    <p style="margin:8px 0 0"><button id="visualToggle" aria-expanded="false">🧠 Show memory steps</button></p>
+  </div>
+  <aside id="visualizer" class="hide" aria-live="polite">
+    <h3 style="margin:0 0 6px">🧠 How the program runs</h3>
+    <p id="visualNote" class="hint" style="margin:0 0 8px"></p>
+    <div id="visualCode"></div>
+    <p id="visualExplanation" style="margin:8px 0"></p>
+    <div id="visualMemory" class="memory-grid"></div>
+    <div class="visual-controls">
+      <button id="visualPrev">← Previous</button>
+      <button id="visualPlay" class="pri">▶ Play</button>
+      <button id="visualNext">Next →</button>
+      <button id="visualClose">Close</button>
+    </div>
+    <p id="visualCount" class="hint" style="margin-bottom:0"></p>
+  </aside>
+</div>
 <p class="hint">Just start typing. Press Enter at the end of a line (shown as ↵). Spaces are automatic, except between two words (like <b>int x</b>). Press <b>Esc</b> or the End game button to stop.<br><span id="kbn" class="hint">⌨️ Works with English or Arabic keyboard automatically.</span></p>
 </section>
 
@@ -505,12 +538,206 @@ async function copyShareLink(){
 }
 function start(k){S.lang=k;if(window.updMy)updMy();$("lh").textContent=L[k]+" – choose your level";show("s4")}
 function play(l){const o=[...Array(10).keys()].sort((a,b)=>NM.indexOf(LV[a])-NM.indexOf(LV[b])||a-b);Object.assign(S,{lv:l,lb:l==="all"?"All 10":l,list:o.filter(i=>l==="all"||LV[i]===l),i:0,wpm:[],acc:[],res:[],quit:false,lives:3,score:0,combo:0,miss:{},prac:PR});load();show("s2")}
-function load(){if(S.quit)return;const s=D[S.lang][S.list[S.i]];S.ti=s[0];S.lock=false;S.ts=Date.now();const R=RULES[D[S.lang][S.list[S.i]][2]||LV[S.list[S.i]]];S.max=S.prac?999:R.e;S.lim=S.prac?1e9:R.b+s[1].length*R.pc;clearInterval(TM);TM=setInterval(tick,100);S.t=s[1];S.p=0;S.err=0;S.ok=0;S.t0=0;
+function load(){if(S.quit)return;stopVisualPlay();VIS.pauseAt=0;$("visualizer").classList.add("hide");$("lessonLayout").classList.remove("visual-active");$("visualToggle").setAttribute("aria-expanded","false");$("visualToggle").textContent="🧠 Show memory steps";const s=D[S.lang][S.list[S.i]];S.ti=s[0];S.lock=false;S.ts=Date.now();const R=RULES[D[S.lang][S.list[S.i]][2]||LV[S.list[S.i]]];S.max=S.prac?999:R.e;S.lim=S.prac?1e9:R.b+s[1].length*R.pc;clearInterval(TM);TM=setInterval(tick,100);S.t=s[1];S.p=0;S.err=0;S.ok=0;S.t0=0;
 $("lg").innerHTML="<span style='display:inline-block;width:22px;vertical-align:middle;margin-right:6px'>"+I[S.lang]+"</span>"+L[S.lang];$("st").textContent=(D[S.lang][S.list[S.i]][2]||LV[S.list[S.i]])+" · program "+(S.i+1)+"/"+S.list.length;
 $("ti").textContent=s[0];{const n=s[3],l=$("les");if(n){l.classList.remove("hide");l.innerHTML="<b>🧱 "+n[0]+"</b><br>"+n[1]+"<br><span class=hint>How to write it: </span><code>"+n[2].replace(/</g,"&lt;")+"</code><br><span class=hint>Type the program below, comments included. The last lines show how to use it.</span>"}else l.classList.add("hide")}$("pg").style.width=(S.i/S.list.length*100)+"%";tdraw();stats();updHud();$("in").focus()}
 function tdraw(){let h="";const t=S.t;for(let i=0;i<t.length;i++){let ch=t[i]==="\n"?"↵\n":t[i].replace(/&/g,"&amp;").replace(/</g,"&lt;");
 h+=i<S.p?`<span class="d">${ch}</span>`:i==S.p?`<span class="c">${t[i]=="\n"?"↵":ch}</span>${t[i]=="\n"?"\n":""}`:`<span class="n">${ch}</span>`}
 $("code").innerHTML=h}
+const VIS={steps:[],index:0,timer:null,pauseAt:0};
+const escHtml=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+function makeTrace(){
+  const code=S.t||"",lines=code.split("\n"),title=S.ti||"",steps=[];
+  const lineOf=(re,n=0)=>{let found=-1;for(let i=0;i<lines.length;i++)if(re.test(lines[i])&&n--===0){found=i;break}return found<0?0:found};
+  const add=(re,text,memory,n=0)=>steps.push({line:lineOf(re,n),text,memory:JSON.parse(JSON.stringify(memory||{}))});
+  const arrName=code.includes("nums")?"nums":code.includes("vector")||/\bv\b/.test(code)?"v":"a";
+  if(/Sum/i.test(title)){
+    const total=code.match(/\b(sum|total)\b/)?.[1]||"sum";
+    add(new RegExp("\\b"+total+"\\s*=\\s*0"),`Allocate ${total} and initialize it to 0.`,{[total]:0});
+    if(/range\(1,\s*11\)|i\s*=\s*1/.test(code)){
+      for(let i=1,sum=0;i<=10;i++){
+        add(/\bfor\b/,`The loop starts this pass with i = ${i}.`,{i,[total]:sum});
+        sum+=i;add(new RegExp("\\b"+total+"\\s*\\+="),`${total} += ${i}; memory changes from ${sum-i} to ${sum}.`,{i,[total]:sum});
+      }
+      add(/print|cout|printf/,`The program outputs ${total} = 55.`,{[total]:55,output:55});
+    }else{
+      const loopVar=code.match(/for\s*\(\s*(?:const|int)?\s*(\w+)\s*:/)?.[1]||code.match(/for\s+(\w+)\s+in/)?.[1]||"n";
+      const values=[1,2,3];let sum=0;
+      values.forEach(value=>{add(/\bfor\b/,`Read ${value} into ${loopVar} from ${arrName}.`,{[arrName]:values,[loopVar]:value,[total]:sum});sum+=value;add(new RegExp("\\b"+total+"\\s*\\+="),`${total} += ${value}; update it to ${sum}.`,{[arrName]:values,[loopVar]:value,[total]:sum})});
+      add(/cout|print/,`Output the sum: ${sum}.`,{[arrName]:values,[total]:sum,output:sum});
+    }
+  }else if(/Find the max/i.test(title)){
+    const maxName=code.match(/\b(mx|max|best)\b/)?.[1]||"max",values=[3,9,2,7],initial=values[0];
+    add(new RegExp("\\b"+maxName+"\\s*=\\s*"),`${maxName} starts with the first sample value (${initial}).`,{[arrName]:values,[maxName]:initial});
+    let best=initial;
+    for(let i=1;i<values.length;i++){
+      add(/\bfor\b/,`Check the next value at index ${i}.`,{[arrName]:values,i,[maxName]:best});
+      const replace=values[i]>best;
+      add(code.includes("max(")?/\bmax\s*\(/:/\bif\b/,`${values[i]} ${replace?">":"≤"} ${best}; ${replace?"update the maximum":"keep the current maximum"}.`,{[arrName]:values,i,[maxName]:replace?values[i]:best});
+      if(replace)best=values[i];
+    }
+    add(/print|cout|printf|}\s*$/,`The final maximum is ${maxName} = ${best}.`,{[arrName]:values,[maxName]:best});
+  }else if(/Count evens/i.test(title)){
+    const countName="count",values=[2,5,8,3,6];let count=0;
+    add(/\bcount\s*=\s*0/,`Initialize ${countName} to 0.`,{[arrName]:values,[countName]:count});
+    values.forEach((v,i)=>{add(/\bfor\b/,`Read ${v} from ${arrName}[${i}].`,{[arrName]:values,i,n:v,[countName]:count});const even=v%2===0;add(/\bif\b/,`${v} is ${even?"even, so increment count":"odd, so leave count unchanged"}.`,{[arrName]:values,i,n:v,[countName]:count+(even?1:0)});if(even)count++});
+    add(/print|cout|printf/,`Output the final count: ${count}.`,{[countName]:count,output:count});
+  }else if(/Swap two values/i.test(title)){
+    const a=4,b=9;
+    add(/\bt\s*=\s*a|\[a,\s*b\]\s*=/,`Copy a (${a}) into temporary storage t.`,{a,b,t:a});
+    add(/\ba\s*=\s*b/,`Copy b (${b}) into a.`,{a:b,b,t:a});
+    add(/\bb\s*=\s*t/,`Copy t (${a}) into b. The values have swapped.`,{a:b,b:a,t:a});
+    add(/print|cout|printf/,`Output a = ${b}, b = ${a}.`,{a:b,b:a});
+  }else if(/Binary search/i.test(title)){
+    const values=[1,3,5,7,9],target=7;let lo=0,hi=values.length-1,done=false;
+    add(/\blo\s*(?:,\s*hi)?\s*=/,`Set the search range to indexes 0 through ${hi}; target x = ${target}.`,{[arrName]:values,x:target,lo,hi});
+    while(lo<=hi&&!done){const mid=Math.floor((lo+hi)/2),v=values[mid];add(/\bwhile\b/,`The range is valid (${lo} ≤ ${hi}); calculate its middle index.`,{[arrName]:values,x:target,lo,hi,mid});add(/\bmid\s*=/,`mid = ${mid}, so ${arrName}[${mid}] = ${v}.`,{[arrName]:values,x:target,lo,hi,mid,value:v});if(v===target){add(/==={0,1}\s*x|==\s*x/,`The middle value matches x. Return index ${mid}.`,{[arrName]:values,x:target,lo,hi,mid,result:mid});done=true}else if(v<target){lo=mid+1;add(/\blo\s*=|\blo\s*=|\blo\s*=/,`The middle value is smaller; move lo to ${lo}.`,{[arrName]:values,x:target,lo,hi,mid})}else{hi=mid-1;add(/\bhi\s*=/,`The middle value is larger; move hi to ${hi}.`,{[arrName]:values,x:target,lo,hi,mid})}}
+  }else if(/Bubble sort|Selection sort/i.test(title)){
+    const selection=/Selection sort/i.test(title),values=[5,2,4,1];
+    add(/\bfor\b/,`Start with sample array ${arrName} = [${values.join(", ")}].`,{[arrName]:values});
+    if(selection){
+      for(let i=0;i<values.length-1;i++){let m=i;add(/\bm\s*=\s*i/,`Position i = ${i}; begin by treating index ${m} as the smallest.`,{[arrName]:values,i,m});for(let j=i+1;j<values.length;j++){add(/\bfor\b/,`Compare index ${j} (${values[j]}) with current minimum at ${m} (${values[m]}).`,{[arrName]:values,i,j,m});if(values[j]<values[m]){m=j;add(/\bif\b/,`A smaller value was found. Set m = ${m}.`,{[arrName]:values,i,j,m})}}if(m!==i){[values[i],values[m]]=[values[m],values[i]];add(/swap\(|\[a\[i\],\s*a\[m\]\]/,`Swap indexes ${i} and ${m}; array becomes [${values.join(", ")}].`,{[arrName]:values,i,m})}}
+    }else{
+      for(let i=0;i<values.length-1;i++)for(let j=0;j<values.length-i-1;j++){add(/\bfor\b/,`Compare adjacent values ${values[j]} and ${values[j+1]}.`,{[arrName]:values,i,j});if(values[j]>values[j+1]){[values[j],values[j+1]]=[values[j+1],values[j]];add(/swap\(|\[a\[j\],\s*a\[j\s*\+\s*1\]\]/,`They are out of order. Swap them: [${values.join(", ")}].`,{[arrName]:values,i,j})}else add(/\bif\b/,`They are already in order; leave the array unchanged.`,{[arrName]:values,i,j})}
+    }
+    steps.push({line:lines.length-1,text:`Sorting is complete: [${values.join(", ")}].`,memory:{[arrName]:values.slice()}});
+  }else if(/GCD/i.test(title)){
+    let a=48,b=18;
+    add(/\bwhile\b|if\s*\(b\s*==\s*0\)/,`Start with a = ${a}, b = ${b}.`,{a,b});
+    while(b!==0){const r=a%b;add(/%/,`${a} % ${b} = ${r}; replace (a, b) with (${b}, ${r}).`,{a,b,remainder:r});[a,b]=[b,r]}
+    add(/return/,`b is 0, so the greatest common divisor is a = ${a}.`,{a,b,result:a});
+  }else if(/Factorial|Fibonacci/i.test(title)){
+    const fib=/Fibonacci/i.test(title),fn=fib?"fib":"fact",n0=5,stack=[];
+    function descend(n){stack.push(n);add(/\bif\b|\bn\s*</,`${fn}(${n}) checks its base case.`,{callStack:stack.slice()});if(fib?n<2:n<=1){const v=fib?n:1;stack.pop();add(/return/,`${fn}(${n}) reaches the base case and returns ${v}.`,{callStack:stack.slice(),returnValue:v},0);return v}const first=descend(n-1),second=fib?descend(n-2):1,out=fib?first+second:n*first;stack.pop();add(/return/,`Return to ${fn}(${n}); combine ${fib?`${first} and ${second}`:`${n} and ${first}`} to get ${out}.`,{callStack:stack.slice(),returnValue:out},1);return out}
+    const result=descend(n0);steps.unshift({line:lineOf(/\b(static\s+)?int\s+(fact|fib)\s*\(|\bdef\s+(fact|fib)\s*\(|function\s+(fact|fib)\s*\(/),text:`Demo input: ${fn}(${n0}). A new call frame is created for each recursive call.`,memory:{input:n0,callStack:[]}});
+    steps.push({line:lineOf(/return/),text:`The recursive calls finish; ${fn}(${n0}) returns ${result}.`,memory:{input:n0,result}});
+  }else if(/Is prime/i.test(title)){
+    const n=13;let divisor=2,prime=true;add(/\bn\s*</,`Test sample n = ${n}; numbers below 2 are not prime.`,{n,prime:null});while(divisor*divisor<=n){const divides=n%divisor===0;add(/\bfor\b/,`Try divisor i = ${divisor}; check whether i × i ≤ ${n}.`,{n,i:divisor});add(/%\s*\w+\s*==\s*0|%\s*\w+\s*==\s*0/,`${n} % ${divisor} = ${n%divisor}; ${divides?"it divides evenly":"there is a remainder"}.`,{n,i:divisor,remainder:n%divisor});if(divides){prime=false;break}divisor++}add(/return\s+(true|false|1|0)/,`No divisor was found, so ${n} is ${prime?"prime":"not prime"}.`,{n,prime});
+  }else if(/Is palindrome/i.test(title)){
+    const text="level";let i=0,j=text.length-1;add(/lower\(|toLowerCase|int i\s*=\s*0|i\s*=\s*0/,`Prepare the sample string "${text}" and its indexes.`,{s:text});while(i<j){const equal=text[i]===text[j];add(/\bwhile\b/,`Compare s[${i}] = "${text[i]}" with s[${j}] = "${text[j]}".`,{s:text,i,j});add(/\[i\+\+\]|\[j--\]|\[i\]\s*!=\s*s\[j\]|s\s*==|===|reverse/,equal?`The characters match; move inward.`:`The characters differ; it is not a palindrome.`,{s:text,i:i+1,j:j-1,equal});if(!equal)break;i++;j--}add(/return/,`The sample "${text}" is a palindrome.`,{s:text,result:true});
+  }else{
+    const lang=S.lang==="my"?"custom":S.lang,oop=lang.startsWith("o_");
+    if(oop)return makeOopTrace(title,lines,lineOf);
+    return {note:"This custom program is not executed. This view only walks through its source; built-in algorithm examples have simulated memory traces.",steps:lines.map((line,i)=>({line:i,text:`Review line ${i+1}: ${line.trim()||"blank line"}. Custom code is shown but never executed here.`,memory:{}}))};
+  }
+  return {note:"Teaching simulation with sample input; it traces the algorithm’s variables, not real CPU registers or machine memory.",steps};
+}
+function makeOopTrace(title,lines,lineOf){
+  const steps=[],add=(pattern,text,memory)=>steps.push({line:lineOf(pattern),text,memory});
+  const t=title.toLowerCase();
+  if(t==="classes and objects"){
+    add(/class\s+Dog|class\s+Type/,"The class declaration defines a type; it does not create a Dog object yet.",{class:"Dog"});
+    add(/Dog\s+dog\s*=|Dog\s+dog;|dog\s*=\s*Dog|dog\s*=\s*new\s+Dog|dog\s*=\s*Dog\(\)/,"Create one Dog object. The variable dog refers to that object.",{dog:"Dog object"});
+    add(/age\s*=\s*3/,"Store 3 in the object's age field.",{dog:"Dog object", "dog.age":3});
+    add(/bark\(\)|sound\(\)/,"Call a method using the object.",{dog:"Dog object", "dog.age":3,output:"Woof"});
+  }else if(t==="constructors and destructors"||t==="constructors and destructors"){
+    add(/Counter\s+item|item\s*=\s*Counter|new\s+Counter|Counter\(\)/,"Create an object; its constructor runs automatically.",{item:"Counter object",lifetime:"starting"});
+    add(/Counter\s*\(/,"The constructor initializes or reports the new object's state.",{item:"Counter object",lifetime:"alive"});
+    add(/close\(\)|__exit__|~Counter|__del__/,"Cleanup runs when explicitly closed or when the shown scope ends; some languages do not guarantee destructor timing.",{item:"Counter object",resource:"released"});
+  }else if(t==="encapsulation and data hiding"){
+    add(/private|__balance|#balance|_internal/,"The balance is stored as hidden object state.",{account:"Account object",balance:0});
+    add(/deposit\(|deposit\s*\(/,"A public method checks the input before changing private state.",{account:"Account object",balance:50});
+    add(/getBalance\(|def balance|return self\.__balance|return this\.#balance/,"A getter exposes the current value without exposing direct write access.",{account:"Account object",balance:50});
+  }else if(t==="static members"){
+    add(/static\s+(int|count)|count\s*=\s*0/,"Initialize one class-level counter shared by every instance.",{Player:"class",count:0});
+    add(/new Player|Player\(\)|Player\(\)|Player\s+\w+/,"Create instances; each constructor increments the shared counter.",{players:"2 objects",count:2});
+    add(/Player\.count|count\)/,"Read the shared class value.",{count:2});
+  }else if(t==="inheritance"){
+    add(/class\s+Animal|class\s+Dog|class\s+Dog\s*\(/,"The derived type reuses behavior from its base type.",{Animal:"base class",Dog:"derived class"});
+    add(/super\(\)\.eat|\.eat\(\)|eat\(\)/,"A Dog object can use the inherited eat method.",{object:"Dog",inheritedMethod:"eat()"});
+    add(/bark\(\)|sound\(\)/,"The derived object can also use its own behavior.",{object:"Dog",inheritedMethod:"eat()",method:"bark()"});
+  }else if(t==="polymorphism"){
+    add(/virtual|@Override|def sound|sound\(\)/,"The derived class supplies its own version of the shared method.",{baseType:"Animal",derivedType:"Dog"});
+    add(/Animal\s*\*\s*pet|Animal\s+pet|pet\s*=\s*Dog|const pet = new Dog|pet\s*=\s*Dog/,"Store a Dog object in a reference typed as Animal.",{referenceType:"Animal",actualObject:"Dog"});
+    add(/pet->sound|pet\.sound|pet\.sound/,"Dynamic dispatch calls Dog.sound() for this Dog object.",{referenceType:"Animal",actualObject:"Dog",calledMethod:"Dog.sound()"});
+  }else if(t==="operator overloading"){
+    add(/operator\+|__add__|\.plus\(/,"The class defines a custom addition operation.",{operation:"Point + Point"});
+    add(/Point sum|total\s*=|const total|Point total/,"Combine sample points (2, 0) and (3, 0).",{left:"Point(2)",right:"Point(3)"});
+    add(/a \+ b|\.plus\(|Point\(2\) \+/,"The overloaded operator or named equivalent returns a new result.",{result:"Point(5)"});
+  }else if(t==="friend functions and classes"){
+    add(/private:|private:|__value|#value/,"The value belongs to Box and is hidden from ordinary callers.",{box:"Box object",value:7});
+    add(/friend |readValue|read_value|readValue\(/,"A friend in C++ may access private state; other languages use a deliberate method instead.",{box:"Box object",value:7,access:"authorized helper"});
+    add(/inspect\(|readValue\(|read_value\(/,"The helper reads the value through the language's supported access mechanism.",{value:7});
+  }else if(t==="pointers and oop"){
+    add(/Dog dog|dog = Dog|dog = new Dog|const dog/,"Create the Dog object.",{dog:"Dog object"});
+    add(/Dog\* pointer|alias\s*=\s*dog|alias\s*=\s*dog|pointer\s*=\s*&dog/,"Make a pointer or reference name for the existing object; no new Dog is created.",{dog:"Dog object",alias:"same object"});
+    add(/pointer->bark|alias\.bark|alias\.bark/,"Use the reference to call the object's method.",{dog:"Dog object",alias:"same object",output:"Woof"});
+  }else if(t.includes("advanced polymorphism")){
+    add(/abstract class|class Shape|class Shape|class Shape/,"Declare an abstract contract that cannot be instantiated directly.",{Shape:"abstract type"});
+    add(/class Square|class Square/,"Square implements the abstract area method.",{Shape:"abstract type",Square:"concrete type"});
+    add(/Shape\* shape|Shape shape|shape = new Square|shape\.area/,"Use the implementation through the abstract interface.",{referenceType:"Shape",actualObject:"Square",area:9});
+  }else if(t==="casting"){
+    add(/Animal\* pet|Animal pet|const pet|pet = new Dog/,"A base-typed variable refers to a Dog object.",{referenceType:"Animal",actualObject:"Dog"});
+    add(/dynamic_cast|instanceof|instanceof|instanceof/,"Check the runtime object type before using a more specific interface.",{referenceType:"Animal",actualObject:"Dog",typeCheck:"true"});
+    add(/static_cast|\(int\)|int\("3"\)|Number\(/,"Convert the sample value to an integer-like number.",{sourceValue:3.7,convertedValue:3});
+  }else if(t==="composition and aggregation"){
+    add(/Engine engine|self\.engine|this\.engine/,"Car stores its own Engine part (composition).",{Car:"object",Engine:"owned by Car"});
+    add(/new Engine|Engine\(\)/,"Construct the engine as part of creating a Car.",{Car:"object",Engine:"owned part"});
+    add(/Driver\* guest|self\.leader|this\.leader/,"A separate object is passed in and referenced, not created as the owned part (aggregation).",{Garage:"object",Driver:"externally owned"});
+  }else if(t==="copying and resource management"){
+    add(/Score first|first\s*=\s*Score|first\s*=\s*new Score|first = Score/,"Create the original value object.",{first:"Score(value=10)"});
+    add(/Score second|second\s*=\s*copy|second\s*=\s*Score|second\s*=\s*\{\.\.\.first\}/,"Copy the value into a separate object (or shallow-copy the shown fields).",{first:"Score(value=10)",second:"Score(value=10)"});
+    add(/second\.value\s*=\s*20|second\.get|second\.value/,"Change or read the copy; the original value remains separate.",{first:"Score(value=10)",second:"Score(value=20)"});
+  }else if(t==="templates and generic programming"){
+    add(/template\s*<|TypeVar|class Box<T>|function first/,"Define reusable code with a type parameter or a dynamically typed function.",{typeParameter:"T"});
+    add(/larger\(|return values\[0\]|return values\[0\]/,"Call the generic operation with sample values.",{input:"[4, 7]"});
+    add(/answer\s*=|print\(|System\.out|console\.log/,"The result is produced with its concrete type or value.",{input:"[4, 7]",result:4});
+  }else if(t==="exception handling"){
+    add(/throw |raise |throw new/,"The function checks for invalid input and can signal an error.",{a:8,b:2});
+    add(/try\s*\{|try:|try\s*\{/,"Begin a protected operation.",{operation:"divide(8, 2)",status:"running"});
+    add(/divide\(8,\s*2\)|divide\(8, 2\)/,"The sample inputs are valid; division returns 4.",{a:8,b:2,result:4,status:"success"});
+  }else if(t==="file handling with classes"){
+    add(/class NoteFile/,"Create an object that groups file operations.",{object:"NoteFile"});
+    add(/open\(|newBufferedWriter|createObjectURL|new BufferedWriter/,"Open or prepare a file resource; the language API manages its handle.",{file:"note.txt",status:"open"});
+    add(/write\(|file\.write|link\.click/,"Write the sample text or start the browser download.",{file:"note.txt",contents:"Hello"});
+    add(/with open|try \(BufferedWriter|revokeObjectURL/,"Close the resource or release its temporary URL.",{file:"note.txt",status:"closed"});
+  }else if(t==="solid principles"){
+    add(/class Report/,"Give report data and behavior one focused responsibility.",{Report:"report data"});
+    add(/class Printer/,"Separate the printing responsibility.",{Report:"report data",Printer:"output"});
+    add(/print_report|\.print\(|print\(/,"The Printer uses the Report through a small public method.",{Report:"Sales",output:"Sales"});
+  }else if(t.startsWith("raii")){
+    add(/make_unique|unique_ptr|with Session|try \(Session|class Session/,"Acquire or enter the managed resource.",{resource:"Session",status:"open"});
+    add(/work|read\(\)/,"Use the resource while it is active.",{resource:"Session",status:"in use"});
+    add(/close\(|__exit__|~Counter/,"Release or close the resource at the documented scope boundary.",{resource:"Session",status:"closed"});
+  }else if(t==="design patterns"){
+    add(/class Strategy|interface Strategy/,"Define an interface for interchangeable behavior.",{interface:"Strategy"});
+    add(/class Fast|lambda|price =>/,"Choose one concrete strategy.",{strategy:"Fast"});
+    add(/choice->value|choice\.value|checkout\.total|total\(10\)/,"Call the selected strategy through the shared interface.",{strategy:"Fast",result:1});
+  }
+  if(!steps.length)steps.push({line:0,text:"This lesson explains the object model. Follow the source from top to bottom; no real machine code is executed.",memory:{lesson:title}});
+  return {note:"Conceptual memory model for this lesson. It shows named objects and values; it is not a real CPU or hardware-memory trace.",steps};
+}
+function drawVisualStep(){
+  const step=VIS.steps[VIS.index];if(!step)return;
+  const lines=(S.t||"").split("\n");
+  $("visualCode").innerHTML=lines.map((line,i)=>`<span class="vline${i===step.line?" active":""}">${String(i+1).padStart(2," ")} │ ${escHtml(line)||" "}</span>`).join("");
+  $("visualExplanation").textContent=step.text;
+  $("visualMemory").innerHTML=Object.entries(step.memory||{}).map(([k,v])=>`<div class="memory-cell"><b>${escHtml(k)}</b><span>${escHtml(typeof v==="string"?v:JSON.stringify(v))}</span></div>`).join("")||"<span class='hint'>No variable or object changes on this step.</span>";
+  $("visualCount").textContent=`Step ${VIS.index+1} of ${VIS.steps.length}`;
+  $("visualPrev").disabled=VIS.index===0;$("visualNext").disabled=VIS.index===VIS.steps.length-1;
+}
+function stopVisualPlay(){clearInterval(VIS.timer);VIS.timer=null;$("visualPlay").textContent="▶ Play"}
+function advanceVisual(){
+  if(VIS.index>=VIS.steps.length-1){stopVisualPlay();return}
+  VIS.index++;drawVisualStep();
+  if(VIS.index>=VIS.steps.length-1)stopVisualPlay();
+}
+function toggleVisualizer(){
+  const panel=$("visualizer"),open=panel.classList.contains("hide");
+  stopVisualPlay();
+  if(open)VIS.pauseAt=Date.now();
+  else if(VIS.pauseAt){
+    const paused=Date.now()-VIS.pauseAt;
+    if(S.ts)S.ts+=paused;
+    if(S.t0)S.t0+=paused;
+    VIS.pauseAt=0;
+  }
+  panel.classList.toggle("hide",!open);
+  $("lessonLayout").classList.toggle("visual-active",open);
+  $("visualToggle").setAttribute("aria-expanded",String(open));
+  $("visualToggle").textContent=open?"🧠 Hide memory steps":"🧠 Show memory steps";
+  if(open){const result=makeTrace();VIS.steps=result.steps;VIS.index=0;$("visualNote").textContent=result.note;drawVisualStep()}
+}
 function stats(){const m=S.t0?(Date.now()-S.t0)/60000:0;const w=m>0.002?Math.round(S.p/5/m):0;
 $("w").textContent=w;const tot=S.ok+S.err;$("a").textContent=(tot?Math.round(S.ok/tot*100):100)+"%";$("e").textContent=S.err+(S.prac?"":"/"+S.max);return w}
 let AC=null,snd=true;
@@ -521,7 +748,7 @@ function mult(){return 1+Math.min(4,Math.floor(S.combo/10))}
 function updHud(){$("hud").innerHTML=(S.prac?"\ud83c\udf93 Practice":"\u2764\ufe0f".repeat(Math.max(0,S.lives))+"\ud83d\udda4".repeat(Math.max(0,3-S.lives)))+"<span>\u2b50 Score <b>"+S.score+"</b></span><span>\ud83d\udd25 Combo <b>\u00d7"+mult()+"</b> ("+S.combo+")</span>"}
 function startBack(){let c=20;const b=$("bk"),f=()=>{b.textContent="\u21a9 Going back to choose a language in "+c+"s..."};f();BK=setInterval(()=>{c--;if(c<=0)show(S.lb==="OOP"?"o1":"s1");else f()},1000)}
 let TM,PR=false;const RULES={Easy:{b:12,pc:.9,e:15},Medium:{b:8,pc:.6,e:10},Hard:{b:5,pc:.45,e:5}};
-function tick(){if(S.prac){$("tmt").textContent="Practice mode: no timer";return}const r=S.lim-(Date.now()-S.ts)/1000;$("tmt").textContent="⏱ "+Math.max(0,Math.ceil(r))+"s left";$("tm").style.width=Math.max(0,r/S.lim*100)+"%";$("tm").style.background=r<S.lim*.25?"var(--bad)":"var(--ok)";if(r<=0)timeout()}
+function tick(){if(S.prac){$("tmt").textContent="Practice mode: no timer";return}if(!$("visualizer").classList.contains("hide")){$("tmt").textContent="⏸ Timer paused while viewing memory steps";return}const r=S.lim-(Date.now()-S.ts)/1000;$("tmt").textContent="⏱ "+Math.max(0,Math.ceil(r))+"s left";$("tm").style.width=Math.max(0,r/S.lim*100)+"%";$("tm").style.background=r<S.lim*.25?"var(--bad)":"var(--ok)";if(r<=0)timeout()}
 const lose=()=>{if(snd){tone(220,.2,"square",.06,0);tone(150,.2,"square",.06,.2);tone(100,.4,"square",.06,.4)}};
 function timeout(){gameOver("Time's up")}
 function gameOver(why){if(S.lock)return;clearInterval(TM);S.lock=true;lose();S.lives--;S.combo=0;S.res.push({n:S.ti,ok:0,w:0,why});updHud();$("code").style.opacity=".4";$("ti").textContent="💥 "+why+"!"+(S.lives>0?" -1 \u2764\ufe0f":" You lost");S.i++;setTimeout(()=>{$("code").style.opacity="";if(S.lives<=0)end(true);else if(S.i>=S.list.length)end();else load()},1600)}
@@ -543,7 +770,11 @@ const inp=$("in");
 inp.addEventListener("input",()=>{const v=inp.value;inp.value="";for(const c of v){const m=AR[c];if(m)kbNote();key(m||(c==="\r"?"\n":c))}});
 inp.addEventListener("keydown",e=>{if(e.key==="Tab")e.preventDefault()});
 document.addEventListener("click",()=>{if(!$("s2").classList.contains("hide"))inp.focus()});
-$("again").onclick=()=>play(S.lv);$("lvl").onclick=()=>show("s4");$("home").onclick=()=>show("s1");$("back").onclick=()=>show("s1");$("qt").onclick=quit;document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("s2").classList.contains("hide"))quit()});$("stay").onclick=()=>{clearInterval(BK);$("bk").textContent="Auto-return cancelled."};
+$("visualToggle").onclick=toggleVisualizer;$("visualClose").onclick=toggleVisualizer;
+$("visualPrev").onclick=()=>{stopVisualPlay();VIS.index=Math.max(0,VIS.index-1);drawVisualStep()};
+$("visualNext").onclick=()=>{stopVisualPlay();VIS.index=Math.min(VIS.steps.length-1,VIS.index+1);drawVisualStep()};
+$("visualPlay").onclick=()=>{if(VIS.timer){stopVisualPlay();return}if(VIS.index>=VIS.steps.length-1){VIS.index=0;drawVisualStep()}$("visualPlay").textContent="⏸ Pause";VIS.timer=setInterval(advanceVisual,1100)};
+$("again").onclick=()=>play(S.lv);$("lvl").onclick=()=>show("s4");$("home").onclick=()=>show("s1");$("back").onclick=()=>show("s1");$("qt").onclick=quit;document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("s2").classList.contains("hide")){if(!$("visualizer").classList.contains("hide"))toggleVisualizer();else quit()}});$("stay").onclick=()=>{clearInterval(BK);$("bk").textContent="Auto-return cancelled."};
 $("mu").onclick=()=>{snd=!snd;$("mu").textContent=snd?"🔊":"🔇"};
 $("shareBar").onclick=openShare;
 document.querySelectorAll(".shareBtn").forEach(btn=>btn.onclick=openShare);
