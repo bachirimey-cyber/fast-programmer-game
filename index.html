@@ -3,27 +3,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fast Programmer</title>
 <style>
-:root{--bg:#f6f7fb;--card:#fff;--tx:#1d2233;--mu:#6b7285;--ac:#4f46e5;--ok:#16a34a;--bad:#dc2626;--bd:#e2e5ef;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12141c;--card:#1c1f2b;--tx:#e8eaf3;--mu:#98a0b8;--ac:#818cf8;--ok:#4ade80;--bad:#f87171;--bd:#2c3042}}
+:root{--bg:#f6f7fb;--card:#fff;--tx:#1d2233;--mu:#6b7285;--ac:#4f46e5;--ok:#16a34a;--bad:#dc2626;--bd:#e2e5ef;--shadow:0 14px 36px rgba(32,38,64,.09);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12141c;--card:#1c1f2b;--tx:#e8eaf3;--mu:#98a0b8;--ac:#818cf8;--ok:#4ade80;--bad:#f87171;--bd:#2c3042;--shadow:0 14px 36px rgba(0,0,0,.24)}}
 *{box-sizing:border-box}
 svg{max-width:100%;height:auto}
-body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:760px;margin:0 auto;padding:48px 16px 20px}
-h1{font-size:28px;margin:8px 0 4px}
-.sub{color:var(--mu);margin:0 0 20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
-button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:12px;padding:14px;font-weight:600}
-button:hover{border-color:var(--ac)}
+body{margin:0;background:linear-gradient(180deg,rgba(79,70,229,.055),transparent 380px),var(--bg);color:var(--tx);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:920px;margin:0 auto;padding:64px 20px 36px}
+h1{font-size:clamp(28px,4vw,38px);line-height:1.15;letter-spacing:-.035em;margin:8px 0 8px}
+.sub{color:var(--mu);font-size:17px;margin:0 0 22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:14px;padding:13px 16px;font-weight:650;transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease,transform .16s ease}
+button:hover{border-color:var(--ac);box-shadow:0 5px 16px rgba(32,38,64,.08);transform:translateY(-1px)}
+button:active{transform:translateY(0)}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(79,70,229,.55);outline-offset:3px}
 .pri{background:var(--ac);color:#fff;border-color:var(--ac)}
 .bar{display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between;color:var(--mu);font-size:14px;margin-bottom:10px}
 .bar b{color:var(--tx)}
 .prog{height:6px;background:var(--bd);border-radius:6px;overflow:hidden;margin-bottom:14px}
 .prog i{display:block;height:100%;background:var(--ac);width:0}
-#code{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;font:18px/1.7 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-x:auto;min-height:140px}
+#code{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:18px;font:clamp(15px,2.3vw,18px)/1.75 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-x:auto;min-height:150px;box-shadow:var(--shadow)}
 .d{color:var(--ok)}.c{background:var(--ac);color:#fff;border-radius:3px}.n{color:var(--mu)}
 #lessonLayout{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
 #lessonLayout.visual-active{grid-template-columns:minmax(0,1.1fr) minmax(270px,.9fr)}
-#visualizer{min-width:0;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px}
+#visualizer{min-width:0;background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
 #visualizer.hide{display:none}
 #visualCode{max-height:230px;overflow:auto;background:var(--bg);border-radius:8px;padding:8px;font:12px/1.55 ui-monospace,Menlo,Consolas,monospace;white-space:pre}
 .vline{display:block;padding:0 4px;color:var(--mu)}
@@ -43,21 +45,41 @@ td,th{padding:3px 8px;border-bottom:1px solid var(--bd);text-align:center}
 select,.f{font:inherit;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
 @keyframes gl{50%{opacity:.4}}
 .gl{background:#f59e0b!important;color:#000!important;border-color:#f59e0b!important;animation:gl .9s infinite}
-:root[data-theme="dark"]{--bg:#12141c;--card:#1c1f2b;--tx:#e8eaf3;--mu:#98a0b8;--ac:#818cf8;--ok:#4ade80;--bad:#f87171;--bd:#2c3042}
+:root[data-theme="dark"]{--bg:#12141c;--card:#1c1f2b;--tx:#e8eaf3;--mu:#98a0b8;--ac:#818cf8;--ok:#4ade80;--bad:#f87171;--bd:#2c3042;--shadow:0 14px 36px rgba(0,0,0,.24)}
 .msg{border:2px solid var(--ok);background:var(--card);border-radius:12px;padding:14px 16px;font-size:18px;font-weight:600;margin:0 0 14px}.msg.l{border-color:var(--bad)}
+.theme-toggle{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;padding:8px 12px;z-index:5;box-shadow:var(--shadow)}
+#s0 h1{font-size:clamp(34px,6vw,48px);margin-top:0}
+#s0 .sub{max-width:620px}
+#xp{display:inline-flex;align-items:center;gap:.25em;min-height:38px;padding:6px 12px;border:1px solid var(--bd);border-radius:999px;background:var(--card);font-size:14px;margin:0 0 20px}
+.game-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+#s0 .game-card{display:flex;flex-direction:column;align-items:flex-start;gap:9px;min-height:205px;padding:22px;text-align:left;border-radius:18px;background:linear-gradient(155deg,var(--card),rgba(79,70,229,.035));box-shadow:var(--shadow)}
+#s0 .game-card:hover{box-shadow:0 18px 36px rgba(32,38,64,.14);transform:translateY(-3px)}
+.game-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:rgba(79,70,229,.1);font-size:22px}
+.game-title{font-size:20px;line-height:1.25;font-weight:750}
+.game-desc{color:var(--mu);font-size:14px;font-weight:400;line-height:1.45}
+.game-cta{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin-top:auto;padding-top:10px;color:var(--ac);font-size:14px;font-weight:700}
+#s0 .shareBtn{padding:10px 15px}
+.choice-card{min-height:104px;border-radius:16px;box-shadow:var(--shadow)}
+#langs .choice-card,#ol .choice-card{min-height:120px}
+#s4 .grid button,#c1 .grid button{min-height:96px}
+section:not(.hide){animation:section-in .2s ease-out both}
+@keyframes section-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .share-box{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20;display:flex;align-items:center;justify-content:center;padding:16px}.share-box.hide{display:none}.share-panel{max-width:540px;width:min(100%,540px);padding:18px 18px 12px}.share-link{width:100%;margin:10px 0 14px;padding:12px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit}
 #in{position:fixed;opacity:0;left:-999px;top:0;width:1px;height:1px}
+@media(max-width:740px){main{padding:58px 16px 28px}.game-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#s2>.bar:first-child{justify-content:flex-start;gap:8px}#s2>.bar:first-child>span{padding:5px 8px;background:var(--card);border:1px solid var(--bd);border-radius:10px}}
+@media(max-width:520px){main{padding:58px 14px 24px}.game-grid{grid-template-columns:minmax(0,1fr);gap:11px}#s0 .game-card{min-height:0;padding:17px;display:grid;grid-template-columns:44px minmax(0,1fr);align-items:center;column-gap:12px;row-gap:2px}.game-icon{grid-row:span 2}.game-title,.game-desc{grid-column:2}.game-cta{grid-column:1/-1;padding-top:8px}.bar{gap:8px}.visual-controls button{padding:8px}.share-panel{padding:16px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style></head><body><main>
-<button id="th" style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);right:10px;padding:4px 10px;z-index:5">🌓</button>
+<button id="th" class="theme-toggle" aria-label="Toggle color theme" title="Toggle color theme">🌓</button>
 <textarea id="in" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
 
 <section id='s0'>
 <h1>🎮 Choose a game</h1>
 <p class='sub'>What do you want to practice today?</p>
 <p class='sub' id='xp'></p>
-<div class='grid'>
-<button id='m1' style='padding:22px'>⌨️ Programming<br><span class='hint'>Fast Programmer: type real algorithms</span></button>
-<button id='m2' style='padding:22px'>🔌 SM – Circuit Builder<br><span class='hint'>Build electronic circuits, like Logisim</span></button>
+<div class='grid game-grid'>
+<button id='m1' class='game-card'><span class='game-icon' aria-hidden='true'>⌨️</span><span class='game-title'>Programming</span><span class='game-desc'>Type real algorithms, improve your speed, and learn as you play.</span><span class='game-cta'>Start practicing <span aria-hidden='true'>→</span></span></button>
+<button id='m2' class='game-card'><span class='game-icon' aria-hidden='true'>🔌</span><span class='game-title'>Circuit Builder</span><span class='game-desc'>Build logic circuits, connect gates, and test your ideas.</span><span class='game-cta'>Build a circuit <span aria-hidden='true'>→</span></span></button>
 </div>
 <p><button class='shareBtn'>🔗 Share this game</button></p>
 </section>
@@ -493,7 +515,7 @@ cpp:`<svg viewBox='0 0 48 48' width='52' height='52'><polygon points='24,3 43,14
 py:`<svg viewBox='0 0 48 48' width='52' height='52'><rect x='5' y='4' width='27' height='27' rx='9' fill='#3776ab'/><rect x='16' y='17' width='27' height='27' rx='9' fill='#ffd43b'/><circle cx='13' cy='12' r='2.5' fill='#fff'/><circle cx='35' cy='36' r='2.5' fill='#3776ab'/></svg>`,
 java:`<svg viewBox='0 0 48 48' width='52' height='52'><path d='M10 20h24v10a10 10 0 0 1-10 10h-4a10 10 0 0 1-10-10z' fill='#e76f00'/><path d='M34 22h3a4 4 0 0 1 0 9h-4' fill='none' stroke='#e76f00' stroke-width='3'/><path d='M16 7c-3 4 3 5 0 9M24 5c-3 4 3 5 0 9' fill='none' stroke='#5382a1' stroke-width='2.5' stroke-linecap='round'/><rect x='8' y='42' width='28' height='3' rx='1.5' fill='#5382a1'/></svg>`,
 js:`<svg viewBox='0 0 48 48' width='52' height='52'><rect x='5' y='5' width='38' height='38' rx='5' fill='#f7df1e'/><text x='40' y='39' font-size='19' font-weight='700' text-anchor='end' fill='#222' font-family='Arial,sans-serif'>JS</text></svg>`};
-for(const k in L){const b=document.createElement("button");b.innerHTML=I[k]+"<span>"+L[k]+"</span>";b.style.cssText="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px";b.onclick=()=>start(k);$("langs").appendChild(b)}
+for(const k in L){const b=document.createElement("button");b.className="choice-card";b.innerHTML=I[k]+"<span>"+L[k]+"</span>";b.style.cssText="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px 10px";b.onclick=()=>start(k);$("langs").appendChild(b)}
 function showBest(){const C=["All 10","Easy","Medium","Hard"];$("best").innerHTML="<b>🏅 Best scores (WPM)</b><table style='width:100%;border-collapse:collapse;margin-top:6px'><tr><th></th>"+C.map(c=>"<th>"+c+"</th>").join("")+"</tr>"+Object.keys(L).filter(k=>k!=="my"&&k.slice(0,2)!=="o_").map(k=>"<tr><td>"+L[k]+"</td>"+C.map(c=>"<td style='text-align:center'>"+(best[k+"-"+c]||"–")+"</td>").join("")+"</tr>").join("")+"</table>"}
 showBest();
 const GAME_URL = 'https://bachirimey-cyber.github.io/fast-programmer-game/';
@@ -2208,9 +2230,9 @@ console.log(checkout.total(10));`]
 ];
 OD.js=JS_EXTRA;
 Object.keys(OD).forEach(k=>{L['o_'+k]=L[k]+' OOP';I['o_'+k]=I[k];D['o_'+k]=OD[k].map((x,i)=>x.length===4?[x[0],x[3],'Easy',[x[0],x[1],x[2]]]:[CON[i][0],x[1],'Easy',[CON[i][0],CON[i][1]+(k==='c'?' C has no classes, so we imitate it with structs and functions.':''),x[0]]]);
-const b=document.createElement('button');b.innerHTML=I[k]+'<span>'+L[k]+' · Full 19-lesson course</span>';b.style.cssText='display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px';b.onclick=()=>{S.lang='o_'+k;playList('Easy',OD[k].map((_,i)=>i),'OOP',true)};$('ol').append(b)});
+const b=document.createElement('button');b.className='choice-card';b.innerHTML=I[k]+'<span>'+L[k]+' · Full 19-lesson course</span>';b.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px 10px';b.onclick=()=>{S.lang='o_'+k;playList('Easy',OD[k].map((_,i)=>i),'OOP',true)};$('ol').append(b)});
 $('ob').onclick=()=>show('s0');
-{const b=document.createElement('button');b.id='m3';b.style.padding='22px';b.innerHTML='🧱 OOP<br><span class=hint>19 detailed lessons in C++, Python, Java and JavaScript</span>';b.onclick=()=>show('o1');document.querySelector('#s0 .grid').append(b)}
+{const b=document.createElement('button');b.id='m3';b.className='game-card';b.setAttribute('aria-label','Open the 19-lesson object-oriented programming course');b.innerHTML='<span class=game-icon aria-hidden=true>🧱</span><span class=game-title>OOP</span><span class=game-desc>Explore 19 lessons in C++, Python, Java and JavaScript.</span><span class=game-cta>Explore lessons <span aria-hidden=true>→</span></span>';b.onclick=()=>show('o1');document.querySelector('#s0 .grid').append(b)}
 const MX={
 c:{S:{'Sum 1 to 10':'','Find the max':'int a[] = {3, 9, 2};\nint n = 3;','Bubble sort':'int a[] = {5, 2, 9};\nint n = 3;','Count evens':'int a[] = {1, 2, 3, 4};\nint n = 4;','Swap two values':'int a = 1, b = 2;','Selection sort':'int a[] = {5, 2, 9};\nint n = 3;'},
  F:{'Factorial':'printf("%d", fact(5));','Is prime':'printf("%d", isPrime(7));','GCD':'printf("%d", gcd(12, 18));'},
